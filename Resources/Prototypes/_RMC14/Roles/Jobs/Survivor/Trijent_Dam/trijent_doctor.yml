@@ -1,6 +1,7 @@
 ﻿- type: job
   parent: CMSurvivorDoctor
   id: CMSurvivorTrijentDoctor
+  canBeCultist: true
   name: cm-job-name-survivor-trijent-doctor
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorTrijentDoctor

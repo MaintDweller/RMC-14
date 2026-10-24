@@ -1,3 +1,4 @@
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Damage;
 using Content.Shared._RMC14.Emote;
 using Content.Shared._RMC14.Xenonids.Heal;
@@ -21,6 +22,7 @@ namespace Content.Shared._RMC14.Xenonids.Headbite;
 
 public sealed class XenoHeadbiteSystem : EntitySystem
 {
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly INetManager _net = default!;
@@ -92,7 +94,7 @@ public sealed class XenoHeadbiteSystem : EntitySystem
         _xenoHeal.CreateHealStacks(xeno, xeno.Comp.HealAmount, xeno.Comp.HealDelay, 1, xeno.Comp.HealDelay);
         _jitter.DoJitter(xeno, xeno.Comp.JitterTime, true, 80, 8, true);
 
-        var change = _damage.TryChangeDamage(target, xeno.Comp.Damage); // TODO target head
+        var change = _damage.TryChangeDamage(target, xeno.Comp.Damage, origin: xeno); // TODO RMC14 target head
         if (change?.GetTotal() > FixedPoint2.Zero)
         {
             var filter = Filter.Pvs(target, entityManager: EntityManager).RemoveWhereAttachedEntity(o => o == xeno.Owner);
@@ -110,6 +112,9 @@ public sealed class XenoHeadbiteSystem : EntitySystem
 
     private bool CanHeadbite(EntityUid xeno, EntityUid target)
     {
+        if (_cultist.IsProtectedFrom(xeno, target))
+            return false;
+
         if (!_mobState.IsCritical(target) && !_status.HasStatusEffect(target, Unconsciousness))
         {
             var failMsg = Loc.GetString("rmc-xeno-headbite-warning");

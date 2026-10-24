@@ -1,6 +1,7 @@
 - type: job
   parent: RMCSurvivorShivasDoctor
   id: RMCSurvivorShivasPanicRoomDoctor
+  canBeCultist: true
   name: rmc-job-name-survivor-shivas-doctor
   playTimeTracker: CMJobSurvivorDoctor
   startingGear: RMCGearSurvivorShivasDoctor

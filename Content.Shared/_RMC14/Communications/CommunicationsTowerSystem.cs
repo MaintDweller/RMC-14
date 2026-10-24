@@ -205,7 +205,7 @@ public sealed class CommunicationsTowerSystem : EntitySystem
 
         _adminLog.Add(LogType.RMCCommunicationsTower, $"{ToPrettyString(args.User):user} turned {ToPrettyString(ent):tower} {state}.");
 
-        ChangeState(ent, state);
+        ChangeState(ent, state, args.User);
 
         if (ent.Comp.State == CommunicationsTowerState.On)
             _intel.RestoreColonyCommunications();
@@ -225,13 +225,15 @@ public sealed class CommunicationsTowerSystem : EntitySystem
         ChangeState(ent, CommunicationsTowerState.Off);
     }
 
-    private void ChangeState(Entity<CommunicationsTowerComponent> tower, CommunicationsTowerState newState)
+    private void ChangeState(Entity<CommunicationsTowerComponent> tower, CommunicationsTowerState newState,
+        EntityUid? user = null)
     {
+        var previousState = tower.Comp.State;
         tower.Comp.State = newState;
         Dirty(tower);
 
-        var ev = new CommunicationsTowerStateChangedEvent(tower);
-        RaiseLocalEvent(tower, ev);
+        var ev = new CommunicationsTowerStateChangedEvent(tower, previousState, user);
+        RaiseLocalEvent(tower, ev, true);
         UpdateAppearance(tower);
     }
 

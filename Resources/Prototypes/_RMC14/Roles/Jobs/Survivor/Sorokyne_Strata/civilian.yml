@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: CMJobSurvivorSoroCivilian
+  canBeCultist: true
   name: rmc-job-name-survivor-soro-civilian
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivor

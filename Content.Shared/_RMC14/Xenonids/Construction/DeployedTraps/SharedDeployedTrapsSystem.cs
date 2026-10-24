@@ -1,6 +1,5 @@
-using Content.Shared._RMC14.Marines;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Slow;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.StepTrigger.Systems;
 using Robust.Shared.Audio.Systems;
@@ -13,9 +12,9 @@ namespace Content.Shared._RMC14.Xenonids.Construction.DeployedTraps;
 public sealed class SharedDeployedTrapsSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly RMCSlowSystem _slow = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
 
@@ -57,9 +56,9 @@ public sealed class SharedDeployedTrapsSystem : EntitySystem
 
     private void OnStepTriggerAttempt(Entity<XenoDeployedTrapsComponent> trap, ref StepTriggerAttemptEvent args)
     {
-        args.Continue = !_hive.FromSameHive(args.Tripper, trap.Owner)
+        args.Continue = !_cultist.IsXenoControlAlly(trap.Owner, args.Tripper)
                         && !_mobState.IsDead(args.Tripper)
-                        && (HasComp<XenoComponent>(args.Tripper) || HasComp<MarineComponent>(args.Tripper));
+                        && _cultist.IsXenoAbilityTarget(args.Tripper);
     }
 
     public override void Update(float frameTime)

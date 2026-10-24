@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: CMSurvivorFlightOperator
+  canBeCultist: true
   name: cm-job-name-survivor-flight-control-operator
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorFlightOperator

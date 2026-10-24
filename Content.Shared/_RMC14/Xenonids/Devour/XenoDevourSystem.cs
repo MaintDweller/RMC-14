@@ -10,6 +10,7 @@ using Content.Shared._RMC14.Synth;
 using Content.Shared._RMC14.TrainingDummy;
 using Content.Shared._RMC14.Vents;
 using Content.Shared._RMC14.Xenonids.Construction.Nest;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Administration.Logs;
@@ -54,6 +55,7 @@ public sealed class XenoDevourSystem : EntitySystem
     [Dependency] private readonly SharedContainerSystem _container = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly SharedHandsSystem _hands = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
@@ -537,7 +539,7 @@ public sealed class XenoDevourSystem : EntitySystem
             return false;
         }
 
-        if (HasComp<XenoComponent>(victim))
+        if (HasComp<XenoComponent>(victim) || _hive.FromSameHive(xeno, victim))
         {
             if (popup)
                 _popup.PopupClient(Loc.GetString("cm-xeno-devour-success"), victim, xeno);

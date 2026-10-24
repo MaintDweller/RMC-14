@@ -64,7 +64,11 @@ public sealed class RMCProjectileSystem : EntitySystem
         if (!_whitelist.IsWhitelistPassOrNull(ent.Comp.Whitelist, args.Target))
             return;
         if (ent.Comp.Add is { } add)
+        {
             EntityManager.AddComponents(args.Target, add);
+            var ev = new RMCProjectileTargetModifiedEvent(ent, add);
+            RaiseLocalEvent(args.Target, ref ev);
+        }
     }
 
     private void OnProjectileMaxRangeMapInit(Entity<ProjectileMaxRangeComponent> ent, ref MapInitEvent args)

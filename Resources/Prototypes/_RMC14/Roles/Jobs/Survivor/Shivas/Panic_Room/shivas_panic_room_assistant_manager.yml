@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorAssistantManager
+  canBeCultist: false
   name: rmc-job-name-survivor-shivas-assman
   description: rmc-job-description-survivor
   ranks:

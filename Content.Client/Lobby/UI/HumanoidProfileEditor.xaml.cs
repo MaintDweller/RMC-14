@@ -497,8 +497,6 @@ namespace Content.Client.Lobby.UI
             #endregion Jobs
 
             TabContainer.SetTabTitle(2, Loc.GetString("humanoid-profile-editor-antags-tab"));
-            // TODO RMC14 antags
-            TabContainer.SetTabVisible(2, false);
 
             RefreshTraits();
 
@@ -845,6 +843,10 @@ namespace Content.Client.Lobby.UI
 
                 AntagList.AddChild(antagContainer);
             }
+
+            // RMC14
+            TabContainer.SetTabVisible(2, AntagList.ChildCount > 0);
+            // RMC14
         }
 
         private void SetDirty()

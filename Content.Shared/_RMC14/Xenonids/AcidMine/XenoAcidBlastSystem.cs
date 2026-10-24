@@ -186,12 +186,14 @@ public sealed class XenoAcidBlastSystem : EntitySystem
     {
         if (TryComp(target, out UserAcidedComponent? existing))
         {
+            existing.SourceHive = _hive.GetHive(ent.Comp.Attached ?? ent.Owner)?.Owner;
             existing.ExpiresAt += ent.Comp.AcidProlongDuration;
             Dirty(target, existing);
         }
         else
         {
             var acided = EnsureComp<UserAcidedComponent>(target);
+            acided.SourceHive = _hive.GetHive(ent.Comp.Attached ?? ent.Owner)?.Owner;
             acided.Duration = ent.Comp.AcidDuration;
             acided.Damage = ent.Comp.AcidDamage;
             acided.ArmorPiercing = ent.Comp.AcidArmorPiercing;

@@ -17,6 +17,9 @@ public sealed class LanguagePamphletSystem : EntitySystem
     {
         _language.AddLanguage(args.User, args.Language);
 
+        if (!_language.CanUnderstand(args.User, args.Language))
+            return;
+
         if (!TryComp<LanguageLearningComponent>(args.User, out var learning) ||
             !learning.Languages.ContainsKey(args.Language))
         {

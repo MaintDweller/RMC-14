@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorHybrisaMaterialReprocessingTechnician
+  canBeCultist: true
   name: rmc-job-name-survivor-material-reprocessing-technician
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaMaterialReprocessingTechnician

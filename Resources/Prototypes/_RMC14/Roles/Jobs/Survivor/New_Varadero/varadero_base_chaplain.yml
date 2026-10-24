@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorNewVaraderoChaplain
+  canBeCultist: false
   name: rmc-job-name-survivor-varadero-chaplain
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivor

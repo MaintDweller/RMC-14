@@ -30,6 +30,8 @@ public sealed partial class XenoResinHoleComponent : Component
     [DataField, AutoNetworkedField]
     public EntProtoId? TrapPrototype = null;
 
+    public EntityUid? ParasitePreparer;
+
     [DataField]
     public TimeSpan StepStunDuration = TimeSpan.FromSeconds(2.0);
 

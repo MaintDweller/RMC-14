@@ -1,0 +1,52 @@
+- type: entity
+  parent: ActionMarineBase
+  id: RMCActionCultistRites
+  name: Hive Rites
+  description: View your cult's shared Devotion, nurture a parasite, perform a joint sacrifice or arrange a succession ritual. Another cultist can join through their own Hive Rites button.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon: { sprite: _RMC14/Cultist/rites.rsi, state: rites }
+  - type: InstantAction
+    event: !type:CultistRitesActionEvent
+
+- type: entity
+  parent: ActionMarineBase
+  id: RMCActionCultistFriendlyFire
+  name: Allow Hive Combat
+  description: Toggle mutual damage between you and your hive's xenonids and structures. Allowing damage also blocks resin door access and lets weeds and sticky resin slow you down. Protection restores door access and prevents your hive's resin from slowing you down. Resin never speeds you up. Stuns, knockbacks and pulls affect you in either mode.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon: { sprite: _RMC14/Cultist/combat.rsi, state: protected }
+    iconOn: { sprite: _RMC14/Cultist/combat.rsi, state: damage }
+  - type: InstantAction
+    event: !type:CultistFriendlyFireActionEvent
+
+- type: entity
+  parent: ActionMarineBase
+  id: RMCActionCultistConvert
+  name: Convert
+  description: Convert a conscious human next to you after ten uninterrupted seconds. Successful conversion has a three-minute cooldown, shared across leader changes. Strong-willed leaders, police and synthetics are immune. Requires a living Queen.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon: { sprite: _RMC14/Cultist/actions.rsi, state: convert }
+  - type: TargetAction
+    range: 1.5
+  - type: EntityTargetAction
+    event: !type:CultistConvertActionEvent
+
+- type: entity
+  parent: ActionMarineBase
+  id: RMCActionCultistStun
+  name: Psychic Stun
+  description: Root a nearby human while you channel for two seconds, then knock them unconscious. Requires a living Queen. Strong-willed leaders, police and synthetics are immune.
+  components:
+  - type: Action
+    itemIconStyle: NoItem
+    icon: { sprite: _RMC14/Cultist/actions.rsi, state: stun }
+  - type: TargetAction
+    range: 1.5
+  - type: EntityTargetAction
+    event: !type:CultistStunActionEvent

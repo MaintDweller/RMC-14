@@ -1,0 +1,21 @@
+- type: entity
+  id: RMCCultistEffects
+  name: cultist effects
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Cultist
+    components:
+    - type: NightVision
+      innate: true
+      state: half
+      onlyHalf: true
+      alert: XenoNightVision
+
+- type: entity
+  parent: RMCCultistEffects
+  id: RMCCultistLeaderEffects
+  name: cult leader effects
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: Cultist
+    leader: true

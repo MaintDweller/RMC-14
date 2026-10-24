@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorEngineer
   id: RMCSurvivorHybrisaConstructionWorker
+  canBeCultist: true
   name: rmc-job-name-survivor-construction-worker
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaConstructionWorker

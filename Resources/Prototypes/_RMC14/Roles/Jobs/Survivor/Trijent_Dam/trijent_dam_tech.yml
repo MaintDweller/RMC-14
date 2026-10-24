@@ -1,6 +1,7 @@
 ﻿- type: job
   parent: CMSurvivorEngineer
   id: CMSurvivorTrijentDamTech
+  canBeCultist: true
   name: cm-job-name-survivor-trijent-dam-tech
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorTrijentDamTech

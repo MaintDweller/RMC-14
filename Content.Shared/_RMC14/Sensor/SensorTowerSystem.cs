@@ -115,6 +115,7 @@ public sealed class SensorTowerSystem : EntitySystem
             return;
         }
 
+        var previousState = ent.Comp.State;
         ref var state = ref ent.Comp.State;
         var popup = state switch
         {
@@ -142,6 +143,8 @@ public sealed class SensorTowerSystem : EntitySystem
 
         Dirty(ent);
         UpdateAppearance(ent);
+        var changed = new SensorTowerStateChangedEvent(ent, previousState, user);
+        RaiseLocalEvent(ent, ref changed, true);
     }
 
     private void OnSensorTowerExamined(Entity<SensorTowerComponent> ent, ref ExaminedEvent args)
@@ -198,6 +201,8 @@ public sealed class SensorTowerSystem : EntitySystem
 
         Dirty(ent);
         UpdateAppearance(ent);
+        var changed = new SensorTowerStateChangedEvent(ent, args.State, args.User);
+        RaiseLocalEvent(ent, ref changed, true);
     }
 
     private void OnSensorTowerDestroyDoAfter(Entity<SensorTowerComponent> ent, ref SensorTowerDestroyDoAfterEvent args)
@@ -206,18 +211,22 @@ public sealed class SensorTowerSystem : EntitySystem
             return;
 
         args.Handled = true;
-        FullyDestroy(ent);
+        FullyDestroy(ent, args.User);
     }
 
-    public void FullyDestroy(Entity<SensorTowerComponent> ent)
+    public void FullyDestroy(Entity<SensorTowerComponent> ent, EntityUid? user = null)
     {
+        var previousState = ent.Comp.State;
         ent.Comp.State = SensorTowerState.Weld;
         Dirty(ent);
         UpdateAppearance(ent);
+        var changed = new SensorTowerStateChangedEvent(ent, previousState, user);
+        RaiseLocalEvent(ent, ref changed, true);
     }
 
-    public void SensorTowerIncrementalDestroy(Entity<SensorTowerComponent> ent)
+    public void SensorTowerIncrementalDestroy(Entity<SensorTowerComponent> ent, EntityUid? user = null)
     {
+        var previousState = ent.Comp.State;
         ent.Comp.State = ent.Comp.State switch
         {
             SensorTowerState.On => SensorTowerState.Wrench,
@@ -229,6 +238,8 @@ public sealed class SensorTowerSystem : EntitySystem
 
         Dirty(ent);
         UpdateAppearance(ent);
+        var changed = new SensorTowerStateChangedEvent(ent, previousState, user);
+        RaiseLocalEvent(ent, ref changed, true);
     }
 
     private void TryRepair(Entity<SensorTowerComponent> tower, EntityUid user, EntityUid used, SensorTowerState state)
@@ -321,6 +332,8 @@ public sealed class SensorTowerSystem : EntitySystem
 
             Dirty(uid, tower);
             UpdateAppearance((uid, tower));
+            var changed = new SensorTowerStateChangedEvent((uid, tower), SensorTowerState.On, null);
+            RaiseLocalEvent(uid, ref changed, true);
         }
     }
 }

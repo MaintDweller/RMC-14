@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorScientist
   id: CMSurvivorLV624Archeologist
+  canBeCultist: true
   name: rmc-job-name-survivor-lv624-archeologist
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorLV624Archeologist

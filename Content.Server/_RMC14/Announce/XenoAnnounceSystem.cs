@@ -18,7 +18,8 @@ public sealed class XenoAnnounceSystem : SharedXenoAnnounceSystem
     [Dependency] private readonly IChatManager _chat = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
 
-    public override void Announce(EntityUid source, Filter filter, string message, string wrapped, SoundSpecifier? sound = null, PopupType? popup = null, bool needsQueen = false)
+    public override void Announce(EntityUid source, Filter filter, string message, string wrapped,
+        SoundSpecifier? sound = null, PopupType? popup = null, bool needsQueen = false)
     {
         base.Announce(source, filter, message, wrapped, sound, popup, needsQueen);
 
@@ -40,16 +41,22 @@ public sealed class XenoAnnounceSystem : SharedXenoAnnounceSystem
         if (source.IsValid())
             _adminLogs.Add(LogType.RMCXenoAnnounce, $"{ToPrettyString(source):source} xeno announced message: {message}");
 
-        _chat.ChatMessageToManyFiltered(filter, ChatChannel.Radio, message, wrapped, source, false, true, null);
-        _audio.PlayGlobal(sound, filter, true);
-
-        if (popup == null)
-            return;
-
+        var recipients = Filter.Empty();
         foreach (var session in filter.Recipients)
         {
-            if (session.AttachedEntity is { } recipient)
+            if (session.AttachedEntity is not { } recipient)
+                continue;
+
+            var ev = new XenoAnnouncementEvent();
+            RaiseLocalEvent(recipient, ref ev);
+            if (ev.Cancelled)
+                continue;
+
+            recipients.AddPlayer(session);
+            if (popup != null)
                 _popup.PopupEntity(message, recipient, recipient, popup.Value);
         }
+        _chat.ChatMessageToManyFiltered(recipients, ChatChannel.Radio, message, wrapped, source, false, true, null);
+        _audio.PlayGlobal(sound, recipients, true);
     }
 }

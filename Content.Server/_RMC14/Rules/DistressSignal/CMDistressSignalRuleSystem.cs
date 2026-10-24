@@ -1,3 +1,4 @@
+using Content.Server._RMC14.Cultist;
 using Content.Server._RMC14.Dropship;
 using Content.Server._RMC14.MapInsert;
 using Content.Server._RMC14.Marines;
@@ -101,6 +102,7 @@ public sealed partial class CMDistressSignalRuleSystem : GameRuleSystem<CMDistre
     [Dependency] private readonly XenoHiveSystem _hive = default!;
     [Dependency] private readonly XenoTunnelSystem _xenoTunnel = default!;
     [Dependency] private readonly ContainerSystem _containers = default!;
+    [Dependency] private readonly CultistSystem _cultists = default!;
     [Dependency] private readonly RMCMapSystem _rmcMap = default!;
     [Dependency] private readonly SharedDestructibleSystem _destruction = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;

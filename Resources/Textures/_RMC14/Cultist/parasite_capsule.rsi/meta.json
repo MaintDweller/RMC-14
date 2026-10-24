@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "MaintDweller",
+  "size": { "x": 32, "y": 32 },
+  "states": [
+    { "name": "icon" },
+    { "name": "open_full" },
+    { "name": "closed_empty" },
+    { "name": "open_empty" }
+  ]
+}

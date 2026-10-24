@@ -2,8 +2,10 @@ using Content.Shared._RMC14.Actions;
 using Content.Shared._RMC14.Armor;
 using Content.Shared._RMC14.Atmos;
 using Content.Shared._RMC14.Chemistry;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Explosion;
 using Content.Shared._RMC14.OnCollide;
+using Content.Shared._RMC14.Projectiles;
 using Content.Shared._RMC14.Shields;
 using Content.Shared._RMC14.Slow;
 using Content.Shared._RMC14.Synth;
@@ -50,6 +52,7 @@ public sealed class XenoSpitSystem : EntitySystem
     [Dependency] private readonly AlertsSystem _alerts = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedColorFlashEffectSystem _colorFlash = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly EntityWhitelistSystem _entityWhitelist = default!;
@@ -106,6 +109,8 @@ public sealed class XenoSpitSystem : EntitySystem
 
         SubscribeLocalEvent<XenoProjectileShieldOnHitComponent, ProjectileHitEvent>(OnShieldOnHit, after: [typeof(CMClusterGrenadeSystem)]);
         SubscribeLocalEvent<XenoProjectileShieldOnHitComponent, CMClusterSpawnedEvent>(OnShieldOnHitClusterSpawned);
+
+        SubscribeLocalEvent<UserAcidedComponent, RMCProjectileTargetModifiedEvent>(OnAcidSourceHit);
 
         SubscribeLocalEvent<UserAcidedComponent, MapInitEvent>(OnUserAcidedMapInit);
         SubscribeLocalEvent<UserAcidedComponent, ComponentRemove>(OnUserAcidedRemove);
@@ -288,7 +293,7 @@ public sealed class XenoSpitSystem : EntitySystem
     private void OnXenoSlowingSpitHit(Entity<XenoSlowingSpitProjectileComponent> spit, ref ProjectileHitEvent args)
     {
         var target = args.Target;
-        if (_hive.FromSameHive(spit.Owner, target) ||
+        if (_cultist.IsXenoControlAlly(spit.Owner, target) ||
             HasComp<XenoComponent>(target))
         {
             PredictedQueueDel(spit.Owner);
@@ -386,12 +391,12 @@ public sealed class XenoSpitSystem : EntitySystem
         if (args.Handled)
             return;
 
-        ApplyAcidStacks(args.Target, ent.Comp.Amount, ent.Comp.Max, ent.Comp.Damage, ent.Comp.Whitelist);
+        ApplyAcidStacks(ent.Owner, args.Target, ent.Comp.Amount, ent.Comp.Max, ent.Comp.Damage, ent.Comp.Whitelist);
     }
 
     private void OnApplyAcidStacksDamageCollide(Entity<ApplyAcidStacksComponent> ent, ref DamageCollideEvent args)
     {
-        ApplyAcidStacks(args.Target, ent.Comp.Amount, ent.Comp.Max, ent.Comp.Damage, ent.Comp.Whitelist);
+        ApplyAcidStacks(ent.Owner, args.Target, ent.Comp.Amount, ent.Comp.Max, ent.Comp.Damage, ent.Comp.Whitelist);
     }
 
     private void OnShieldOnHit(Entity<XenoProjectileShieldOnHitComponent> ent, ref ProjectileHitEvent args)
@@ -420,6 +425,19 @@ public sealed class XenoSpitSystem : EntitySystem
                 projectile.Shooter = shooter;
                 Dirty(spawned, projectile);
             }
+        }
+    }
+
+    private void OnAcidSourceHit(Entity<UserAcidedComponent> ent, ref RMCProjectileTargetModifiedEvent args)
+    {
+        foreach (var entry in args.Components.Values)
+        {
+            if (entry.Component is not UserAcidedComponent)
+                continue;
+
+            ent.Comp.SourceHive = _hive.GetHive(args.Projectile)?.Owner;
+            Dirty(ent);
+            return;
         }
     }
 
@@ -535,7 +553,8 @@ public sealed class XenoSpitSystem : EntitySystem
             _popup.PopupEntity(Loc.GetString("rmc-acid-resist-partial"), player, player);
     }
 
-    private void ApplyAcidStacks(EntityUid target, int amount, int max, DamageSpecifier? damage, EntityWhitelist? whitelist)
+    private void ApplyAcidStacks(EntityUid origin, EntityUid target, int amount, int max,
+        DamageSpecifier? damage, EntityWhitelist? whitelist)
     {
         if (!_entityWhitelist.IsWhitelistPassOrNull(whitelist, target))
             return;
@@ -552,7 +571,7 @@ public sealed class XenoSpitSystem : EntitySystem
         {
             if (damage != null)
             {
-                _damageable.TryChangeDamage(target, damage);
+                _damageable.TryChangeDamage(target, damage, origin: origin);
                 _popup.PopupEntity(Loc.GetString("rmc-xeno-praetorian-acid-spit-hit-self"), target, target, PopupType.SmallCaution);
             }
 
@@ -566,7 +585,8 @@ public sealed class XenoSpitSystem : EntitySystem
             return;
 
         var target = args.Target;
-        if (_hive.FromSameHive(spit.Owner, target) || !_solution.TryGetSolution(target, spit.Comp.TargetSolution, out var solEnt, out var solu))
+        if (_cultist.IsXenoControlAlly(spit.Owner, target) ||
+            !_solution.TryGetSolution(target, spit.Comp.TargetSolution, out var solEnt, out var solu))
             return;
 
         if (solu == null || solEnt == null)
@@ -613,6 +633,9 @@ public sealed class XenoSpitSystem : EntitySystem
                 continue;
 
             acided.NextDamageAt = time + acided.DamageEvery;
+            if (_cultist.IsProtectedFromHive(uid, acided.SourceHive))
+                continue;
+
             _damageable.TryChangeDamage(uid, acided.Damage, armorPiercing: acided.ArmorPiercing);
         }
 

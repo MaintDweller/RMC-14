@@ -6,3 +6,5 @@
   - type: GameRule
     minPlayers: 1
   - type: CMDistressSignalRule
+  - type: CultistRule
+    allowSyntheticCultists: false

@@ -1,0 +1,16 @@
+- type: entity
+  id: RMCCultistLanguageLearning
+  name: cultist language learning
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: LanguageLearning
+    learnableLanguages:
+    - Xeno
+    firstContactLanguages:
+    - Xeno
+    languages:
+      Xeno:
+        initialBoostedWordCount: 18
+        initialBoostedWordComprehension: 0.4
+    baseWordLearningRate: 0.075
+    maxWordComprehension: 0.5

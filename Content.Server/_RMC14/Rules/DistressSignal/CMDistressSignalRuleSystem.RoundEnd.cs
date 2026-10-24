@@ -4,6 +4,7 @@ using Content.Server.Ghost.Roles.Components;
 using Content.Shared._RMC14.Armor.Ghillie;
 using Content.Shared._RMC14.Armor.ThermalCloak;
 using Content.Shared._RMC14.CCVar;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Dropship;
 using Content.Shared._RMC14.Light;
 using Content.Shared._RMC14.Marines;
@@ -128,7 +129,7 @@ public sealed partial class CMDistressSignalRuleSystem
                 continue;
             }
 
-            if (HasComp<SynthComponent>(marineId))
+            if (HasComp<SynthComponent>(marineId) || HasComp<CultistComponent>(marineId))
                 continue;
 
             if (_containers.IsEntityInContainer(marineId))

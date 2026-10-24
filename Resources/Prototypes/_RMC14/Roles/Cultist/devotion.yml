@@ -1,0 +1,34 @@
+- type: entity
+  id: RMCCultistDevotion
+  name: cult devotion settings
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: CultistDevotion
+    capacity: 100
+    parasiteCost: 35
+    parasiteRitualDelay: 15
+    parasiteContainer: RMCCultistParasiteContainer
+    sacrificeDelay: 15
+    sacrificeJitterTime: 1.5
+    sacrificeJitterAmplitude: 14
+    sacrificeJitterFrequency: 5
+    rewards:
+      Conversion: 5
+      Trap: 2
+      XenoRescue: 6
+      Infection: 5
+      Sabotage: 8
+      SensorSabotage: 5
+      Sacrifice: 10
+    usurpationCost: 30
+    transferDelay: 20
+    successionDelay: 40
+    solitaryDelay: 60
+    usurpationDelay: 60
+    usurpationCooldown: 600
+    sabotageDelay: 60
+    rewardCooldown: 300
+    trapRewardCooldown: 60
+    rescueDamageFraction: 0.5
+    rescueDistance: 8
+    rescueSafetyDelay: 20

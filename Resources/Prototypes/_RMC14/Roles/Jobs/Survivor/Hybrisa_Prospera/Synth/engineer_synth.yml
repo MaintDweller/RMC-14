@@ -1,6 +1,7 @@
 - type: job
   parent: RMCSyntheticColony
   id: RMCSyntheticColonyHybrisaEngineer
+  canBeCultist: true
   startingGear: RMCGearSyntheticColonistHybrisaEngineer
   spawnMenuRoleName: Engineer Synth (Hybrisa Survivor)
   special:

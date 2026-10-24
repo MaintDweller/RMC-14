@@ -1,0 +1,57 @@
+- type: entity
+  parent: BaseItem
+  id: RMCCultistParasiteContainer
+  name: parasite capsule
+  description: A chitin capsule that nurtures a single parasite. Open the lid before taking the parasite out or putting it back. It fits inside an ordinary bag.
+  components:
+  - type: Sprite
+    sprite: _RMC14/Cultist/parasite_capsule.rsi
+    layers:
+    - state: icon
+      map: ["full"]
+    - state: closed_empty
+      map: ["empty"]
+      visible: false
+  - type: Item
+    size: Small
+  - type: Openable
+    openOnActivate: true
+    closeable: true
+    examineText: rmc-cultist-parasite-capsule-opened
+    closedPopup: rmc-cultist-parasite-capsule-closed
+    sound:
+      path: /Audio/Machines/machine_switch.ogg
+    closeSound:
+      path: /Audio/Machines/machine_switch.ogg
+  - type: ItemCabinet
+    slot: parasite
+  - type: ItemSlots
+    slots:
+      parasite:
+        name: rmc-cultist-parasite-slot
+        startingItem: CMXenoParasite
+        ejectOnUse: true
+        ejectOnInteract: true
+        lockedFailPopup: rmc-cultist-parasite-capsule-closed
+        whitelist:
+          components:
+          - XenoParasite
+  - type: Appearance
+  - type: GenericVisualizer
+    visuals:
+      enum.ItemCabinetVisuals.ContainsItem:
+        full:
+          True: { visible: true }
+          False: { visible: false }
+        empty:
+          True: { visible: false }
+          False: { visible: true }
+      enum.OpenableVisuals.Opened:
+        full:
+          True: { state: open_full }
+          False: { state: icon }
+        empty:
+          True: { state: open_empty }
+          False: { state: closed_empty }
+  - type: XenoNurturing
+  - type: RMCContainerEmptyOnDestruction

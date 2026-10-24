@@ -1,4 +1,5 @@
 using System.Numerics;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Fireman;
 using Content.Shared._RMC14.Weapons.Melee;
 using Content.Shared._RMC14.Xenonids;
@@ -38,6 +39,7 @@ public sealed class RMCPullingSystem : EntitySystem
 {
     [Dependency] private readonly ActionBlockerSystem _actionBlocker = default!;
     [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedMeleeWeaponSystem _melee = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly MovementSpeedModifierSystem _movementSpeed = default!;
@@ -117,6 +119,7 @@ public sealed class RMCPullingSystem : EntitySystem
         var target = args.PulledUid;
         if (target != ent.Owner ||
             HasComp<ParalyzeOnPullAttemptImmuneComponent>(user) ||
+            _cultist.CanRescueXeno(user, target) ||
             _mobState.IsDead(ent))
         {
             return;

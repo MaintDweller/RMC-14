@@ -1,6 +1,7 @@
 ﻿- type: job
   parent: CMSurvivorTrucker
   id: RMCSurvivorKutjevoTrucker
+  canBeCultist: true
   name: rmc-job-name-survivor-kutjevo-trucker
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorKutjevoTrucker

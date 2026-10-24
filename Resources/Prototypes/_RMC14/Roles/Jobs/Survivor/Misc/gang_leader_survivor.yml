@@ -2,6 +2,7 @@
 - type: job
   parent: CMSurvivor
   id: CMSurvivorGangLeader
+  canBeCultist: false
   name: cm-job-name-survivor-gang-leader
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivor

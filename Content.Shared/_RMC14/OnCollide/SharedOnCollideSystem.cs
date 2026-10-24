@@ -1,8 +1,8 @@
 using Content.Shared._RMC14.Armor.ThermalCloak;
 using Content.Shared._RMC14.Atmos;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Stun;
 using Content.Shared._RMC14.Xenonids;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Projectile;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit;
 using Content.Shared.Damage;
@@ -18,6 +18,7 @@ namespace Content.Shared._RMC14.OnCollide;
 
 public abstract class SharedOnCollideSystem : EntitySystem
 {
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
@@ -25,7 +26,6 @@ public abstract class SharedOnCollideSystem : EntitySystem
     [Dependency] private readonly ThermalCloakSystem _cloak = default!;
     [Dependency] private readonly EntityWhitelistSystem _whitelist = default!;
     [Dependency] private readonly XenoSpitSystem _xenoSpit = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly XenoSystem _xeno = default!;
     [Dependency] private readonly RMCSizeStunSystem _size = default!;
     [Dependency] private readonly StandingStateSystem _standing = default!;
@@ -81,7 +81,7 @@ public abstract class SharedOnCollideSystem : EntitySystem
         if (!ent.Comp.DamageDead && _mobState.IsDead(other))
             return;
 
-        if (_hive.FromSameHive(ent.Owner, other))
+        if (_cultist.IsXenoControlAlly(ent.Owner, other))
             return;
 
         if (ent.Comp.Fire && HasComp<RMCImmuneToFireTileDamageComponent>(other))
@@ -99,7 +99,8 @@ public abstract class SharedOnCollideSystem : EntitySystem
             var damage = ent.Comp.Damage;
             if (ent.Comp.Acidic)
                 damage = _xeno.TryApplyXenoAcidDamageMultiplier(other, damage);
-            _damageable.TryChangeDamage(other, damage, ent.Comp.IgnoreResistances, armorPiercing: ent.Comp.ArmorPenetration);
+            _damageable.TryChangeDamage(other, damage, ent.Comp.IgnoreResistances,
+                armorPiercing: ent.Comp.ArmorPenetration, origin: ent);
             DoEmote(ent, other);
             didEmote = true;
         }
@@ -108,7 +109,7 @@ public abstract class SharedOnCollideSystem : EntitySystem
             var damage = ent.Comp.ChainDamage;
             if (ent.Comp.Acidic)
                 damage = _xeno.TryApplyXenoAcidDamageMultiplier(other, damage);
-            _damageable.TryChangeDamage(other, damage, ent.Comp.IgnoreResistances);
+            _damageable.TryChangeDamage(other, damage, ent.Comp.IgnoreResistances, origin: ent);
         }
 
         _xenoSpit.SetAcidCombo(other, ent.Comp.AcidComboDuration, ent.Comp.AcidComboDamage, ent.Comp.AcidComboParalyze, ent.Comp.AcidComboResists);

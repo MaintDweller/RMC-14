@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorEngineer
   id: RMCSurvivorShivasEngineer
+  canBeCultist: true
   name: rmc-job-name-survivor-shivas-engineer
   playTimeTracker: CMJobSurvivorEngineer
   startingGear: RMCGearSurvivorShivasEngineer

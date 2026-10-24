@@ -1,0 +1,8 @@
+- files: ["robes.ogg"]
+  license: "CC-BY-SA-3.0"
+  copyright: "CM-SS13 contributors, extracted unchanged from sound/voice/scream_horror1.ogg"
+  source: "https://github.com/cmss13-devs/cmss13"
+- files: ["stun.ogg"]
+  license: "CC-BY-SA-3.0"
+  copyright: "CM-SS13 contributors, extracted unchanged from sound/scp/scare1.ogg"
+  source: "https://github.com/cmss13-devs/cmss13"

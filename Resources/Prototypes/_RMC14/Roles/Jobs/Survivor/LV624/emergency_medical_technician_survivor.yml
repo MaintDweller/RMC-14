@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorDoctor
   id: CMSurvivorLV624MedicalTechnician
+  canBeCultist: true
   name: rmc-job-name-survivor-lv624-medical-technician
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorLV624MedicalTechnician

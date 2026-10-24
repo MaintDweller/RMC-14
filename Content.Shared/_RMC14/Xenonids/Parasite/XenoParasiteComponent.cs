@@ -37,4 +37,6 @@ public sealed partial class XenoParasiteComponent : Component
 
     [DataField]
     public NetUserId? PendingInfectorUserId;
+
+    public EntityUid? Infector;
 }

@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorTrucker
   id: CMSurvivorSolarisTrucker
+  canBeCultist: true
   name: rmc-job-name-survivor-solaris-trucker
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorSolarisTrucker

@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorScientist
   id: RMCSurvivorNewVaraderoResearcher
+  canBeCultist: true
   name: rmc-job-name-survivor-new-varadero-researcher
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivorScientist

@@ -197,7 +197,7 @@ public sealed class LanguageLearningSystem : SharedLanguageLearningSystem
         return created;
     }
 
-    private static void SyncLanguageState(LanguageLearningComponent comp, ProtoId<LanguagePrototype> language)
+    private void SyncLanguageState(LanguageLearningComponent comp, ProtoId<LanguagePrototype> language)
     {
         if (!comp.Languages.TryGetValue(language, out var data))
         {
@@ -205,14 +205,22 @@ public sealed class LanguageLearningSystem : SharedLanguageLearningSystem
             return;
         }
 
+        var words = new Dictionary<string, float>();
+        foreach (var (word, comprehension) in data.LearnedWords)
+        {
+            var ev = new LanguageLearningWordEvent(language, comprehension);
+            RaiseLocalEvent(comp.Owner, ref ev);
+            words[word] = ev.Comprehension;
+        }
+
         comp.LanguageStates[language] = new LanguageLearningStateData(
             data.RequiresFirstContact,
             data.Encountered,
             data.Progress,
-            new Dictionary<string, float>(data.LearnedWords));
+            words);
     }
 
-    private static void SyncLanguageStates(LanguageLearningComponent comp)
+    private void SyncLanguageStates(LanguageLearningComponent comp)
     {
         comp.LanguageStates.Clear();
 
@@ -311,7 +319,7 @@ public sealed class LanguageLearningSystem : SharedLanguageLearningSystem
         }
     }
 
-    private void UpdateLanguageProgress(Entity<LanguageLearningComponent> learner, ProtoId<LanguagePrototype> language)
+    public void UpdateLanguageProgress(Entity<LanguageLearningComponent> learner, ProtoId<LanguagePrototype> language)
     {
         var comp = learner.Comp;
         var comprehension = CalculateOverallComprehension(comp, language);
@@ -324,6 +332,8 @@ public sealed class LanguageLearningSystem : SharedLanguageLearningSystem
 
         if (canUnderstand || canSpeak)
             _languages.AddLanguage(learner.Owner, language, addSpoken: canSpeak, addUnderstood: canUnderstand);
+        else
+            _languages.UpdateEntityLanguages(learner.Owner);
 
         if (comprehension >= comp.FluentComprehensionThreshold &&
             languageData.LearnedWords.Count > 0 &&
@@ -400,6 +410,9 @@ public sealed class LanguageLearningSystem : SharedLanguageLearningSystem
         var requiredThreshold = Math.Max(
             comp.MasteredComprehensionThreshold,
             GetComprehensionThresholds(language).Clear);
-        return languageData.Progress >= requiredThreshold;
+        var ev = new LanguageLearningSpeechEvent(language, languageData.Progress,
+            languageData.Progress >= requiredThreshold);
+        RaiseLocalEvent(comp.Owner, ref ev);
+        return ev.CanSpeak;
     }
 }

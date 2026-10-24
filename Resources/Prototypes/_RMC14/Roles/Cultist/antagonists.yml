@@ -1,0 +1,17 @@
+- type: antag
+  id: RMCCultist
+  name: rmc-cultist-name
+  objective: rmc-cultist-objective
+  antagonist: true
+  setPreference: true
+  isCM: true
+
+- type: entity
+  parent: BaseMindRoleAntag
+  id: RMCMindRoleCultist
+  name: Xeno Cultist Role
+  components:
+  - type: CultistRole
+  - type: MindRole
+    antagPrototype: RMCCultist
+    roleType: TeamAntagonist

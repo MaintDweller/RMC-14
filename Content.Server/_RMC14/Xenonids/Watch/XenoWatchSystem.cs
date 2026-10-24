@@ -1,5 +1,6 @@
 ﻿using Content.Server.Chat.Systems;
 using Content.Server.Popups;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Xenonids;
 using Content.Shared._RMC14.Xenonids.Evolution;
 using Content.Shared._RMC14.Xenonids.Hive;
@@ -14,6 +15,7 @@ namespace Content.Server._RMC14.Xenonids.Watch;
 
 public sealed class XenoWatchSystem : SharedXenoWatchSystem
 {
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedEyeSystem _eye = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
@@ -41,7 +43,26 @@ public sealed class XenoWatchSystem : SharedXenoWatchSystem
         SubscribeLocalEvent<XenoWatchingComponent, ComponentRemove>(OnWatchingRemove);
         SubscribeLocalEvent<XenoWatchingComponent, EntityTerminatingEvent>(OnWatchingRemove);
 
+        SubscribeLocalEvent<CultistComponent, ComponentInit>(OnCultistInit);
+
         SubscribeLocalEvent<ExpandICChatRecipientsEvent>(OnExpandRecipients);
+    }
+
+    private void OnCultistInit(Entity<CultistComponent> ent, ref ComponentInit args)
+    {
+        if (!TryComp<XenoWatchedComponent>(ent, out var watched))
+            return;
+
+        foreach (var watcher in new List<EntityUid>(watched.Watching))
+        {
+            if (TerminatingOrDeleted(watcher))
+                continue;
+
+            if (TryComp<ActorComponent>(watcher, out var actor))
+                Unwatch(watcher, actor.PlayerSession);
+            else
+                RemoveWatcher(watcher);
+        }
     }
 
     private void OnWatchedRemove<T>(Entity<XenoWatchedComponent> ent, ref T args)
@@ -113,7 +134,7 @@ public sealed class XenoWatchSystem : SharedXenoWatchSystem
         var query = EntityQueryEnumerator<XenoComponent, HiveMemberComponent, MetaDataComponent>();
         while (query.MoveNext(out var uid, out _, out var member, out var metaData))
         {
-            if (uid == ent.Owner || member.Hive != hive.Owner)
+            if (uid == ent.Owner || member.Hive != hive.Owner || !_cultist.CanBeWatched(uid))
                 continue;
 
             if (_mobState.IsDead(uid))
@@ -130,6 +151,9 @@ public sealed class XenoWatchSystem : SharedXenoWatchSystem
     public override void Watch(Entity<HiveMemberComponent?, ActorComponent?, EyeComponent?> watcher, Entity<HiveMemberComponent?> toWatch)
     {
         base.Watch(watcher, toWatch);
+
+        if (!_cultist.CanBeWatched(toWatch.Owner))
+            return;
 
         if (!HasQueenPopup(watcher))
             return;

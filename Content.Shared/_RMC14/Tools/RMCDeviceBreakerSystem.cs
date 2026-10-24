@@ -74,7 +74,7 @@ public sealed class RMCDeviceBreakerSystem : EntitySystem
 
         if (TryComp<SensorTowerComponent>(target, out var sensors) && sensors.State != SensorTowerState.Weld)
         {
-            _sensor.SensorTowerIncrementalDestroy((target, sensors));
+            _sensor.SensorTowerIncrementalDestroy((target, sensors), user);
         }
     }
 }

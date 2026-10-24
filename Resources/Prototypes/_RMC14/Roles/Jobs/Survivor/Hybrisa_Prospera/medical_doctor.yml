@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorDoctor
   id: RMCSurvivorHybrisaMedicalDoctor
+  canBeCultist: true
   name: rmc-job-name-survivor-medical-doctor
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaMedicalDoctor

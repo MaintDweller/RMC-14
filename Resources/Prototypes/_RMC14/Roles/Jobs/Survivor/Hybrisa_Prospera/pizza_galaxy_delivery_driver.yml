@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorHybrisaPizzaGalaxy
+  canBeCultist: true
   name: rmc-job-name-survivor-pizza-galaxy
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaPizzaGalaxy

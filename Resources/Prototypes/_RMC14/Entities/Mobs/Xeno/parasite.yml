@@ -87,6 +87,7 @@
     whitelist:
       components:
       - Xeno
+      - Cultist
   - type: MovementSpeedModifier
     baseWalkSpeed: 2.7
     baseSprintSpeed: 5

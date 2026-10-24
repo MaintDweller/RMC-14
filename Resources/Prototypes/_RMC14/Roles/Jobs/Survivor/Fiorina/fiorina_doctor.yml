@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorDoctor
   id: CMSurvivorFiorinaDoctor
+  canBeCultist: true
   name: cm-job-name-survivor-fiorina-doctor
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivorDoctor

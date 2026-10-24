@@ -1,5 +1,6 @@
 using System.Diagnostics.CodeAnalysis;
 using Content.Shared._RMC14.Armor;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Entrenching;
 using Content.Shared._RMC14.Map;
 using Content.Shared._RMC14.Marines.Orders;
@@ -7,7 +8,6 @@ using Content.Shared._RMC14.Pulling;
 using Content.Shared._RMC14.Xenonids;
 using Content.Shared._RMC14.Xenonids.Construction.Nest;
 using Content.Shared._RMC14.Xenonids.Devour;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared._RMC14.Xenonids.Pheromones;
 using Content.Shared._RMC14.Projectiles;
@@ -44,6 +44,7 @@ namespace Content.Shared._RMC14.Damage;
 public abstract class SharedRMCDamageableSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly EntityWhitelistSystem _entityWhitelist = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
@@ -58,7 +59,6 @@ public abstract class SharedRMCDamageableSystem : EntitySystem
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly XenoSystem _xeno = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly SharedMapSystem _mapSystem = default!;
 
     private static readonly ProtoId<DamageGroupPrototype> BruteGroup = "Brute";
@@ -688,7 +688,7 @@ public abstract class SharedRMCDamageableSystem : EntitySystem
                 if (!_entityWhitelist.IsWhitelistPassOrNull(damage.Whitelist, user))
                     continue;
 
-                if (_hive.FromSameHive(contact, user))
+                if (_cultist.IsXenoDamageAlly(contact, user))
                     continue;
 
                 userDamage.NextDamageAt = time + userDamage.DamageEvery;

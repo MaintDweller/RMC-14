@@ -2,6 +2,7 @@
 - type: job
   parent: CMSurvivor
   id: CMSurvivorPriest
+  canBeCultist: false
   name: cm-job-name-surivor-priest
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivor

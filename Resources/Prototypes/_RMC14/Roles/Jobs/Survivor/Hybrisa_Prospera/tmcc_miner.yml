@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorMiner
   id: RMCSurvivorHybrisaTMCCMiner
+  canBeCultist: true
   name: rmc-job-name-survivor-tmcc-miner
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaTMCCMiner

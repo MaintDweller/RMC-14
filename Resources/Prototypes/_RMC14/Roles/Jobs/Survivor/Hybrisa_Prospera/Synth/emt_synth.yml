@@ -1,6 +1,7 @@
 - type: job
   parent: RMCSyntheticColony
   id: RMCSyntheticColonyHybrisaEMT
+  canBeCultist: true
   startingGear: RMCGearSyntheticColonistHybrisaEMT
   spawnMenuRoleName: EMT Synthetic (Hybrisa Survivor)
   special:

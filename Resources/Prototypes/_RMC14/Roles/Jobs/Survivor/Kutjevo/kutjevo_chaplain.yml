@@ -1,6 +1,7 @@
 ﻿- type: job
   parent: CMSurvivorPriest
   id: RMCSurvivorKutjevoChaplain
+  canBeCultist: false
   name: rmc-job-name-survivor-kutjevo-chaplain
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorKutjevoChaplain

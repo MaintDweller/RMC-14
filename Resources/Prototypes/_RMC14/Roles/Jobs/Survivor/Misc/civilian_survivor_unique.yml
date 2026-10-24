@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorCivilianUnique
+  canBeCultist: true
   name: rmc-job-name-survivor-civilian
   spawnMenuRoleName: Unique Civilian (Survivor)
   special:

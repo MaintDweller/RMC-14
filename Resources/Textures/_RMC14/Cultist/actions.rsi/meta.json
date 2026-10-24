@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "CM-SS13 contributors, https://github.com/cmss13-devs/cmss13; unchanged sprites extracted from icons/mob/hud/actions.dmi (cultist_channel_convert); icons/mob/hud/actions.dmi (cultist_channel_stun)",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "convert"
+    },
+    {
+      "name": "stun"
+    }
+  ]
+}

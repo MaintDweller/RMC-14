@@ -1,6 +1,7 @@
 using System.Linq;
 using Content.Shared._RMC14.Actions;
 using Content.Shared._RMC14.Atmos;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Damage;
 using Content.Shared._RMC14.Gibbing;
 using Content.Shared._RMC14.Hands;
@@ -64,6 +65,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly RMCHandsSystem _rmcHands = default!;
     [Dependency] private readonly SharedRMCSpriteSystem _rmcSprite = default!;
@@ -151,6 +153,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     private void OnInfectableCanDropTarget(Entity<InfectableComponent> ent, ref CanDropTargetEvent args)
     {
         if (TryComp(args.Dragged, out XenoParasiteComponent? parasite) &&
+            CanHandleParasite((args.Dragged, parasite), args.User) &&
             CanInfectPopup((args.Dragged, parasite), ent, args.User, false))
         {
             args.CanDrop = true;
@@ -169,7 +172,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
     private void OnParasiteAfterInteract(Entity<XenoParasiteComponent> ent, ref AfterInteractEvent args)
     {
-        if (!args.CanReach || args.Target == null || args.Handled || !_rmcHands.IsPickupByAllowed(ent.Owner, args.User))
+        if (!args.CanReach || args.Target == null || args.Handled || !CanHandleParasite(ent, args.User))
             return;
 
         if (StartInfect(ent, args.Target.Value, args.User))
@@ -203,7 +206,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
         if (args.Cancelled || args.Handled || args.Target == null)
             return;
 
-        if (Infect(ent, args.Target.Value))
+        if (Infect(ent, args.Target.Value, user: args.User))
             args.Handled = true;
     }
 
@@ -214,7 +217,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
     private void OnParasiteCanDropDragged(Entity<XenoParasiteComponent> ent, ref CanDropDraggedEvent args)
     {
-        if (args.User != ent.Owner && !_rmcHands.IsPickupByAllowed(ent.Owner, args.User))
+        if (args.User != ent.Owner && !CanHandleParasite(ent, args.User))
             return;
 
         if (!CanInfectPopup(ent, args.Target, args.User, false))
@@ -226,7 +229,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
     private void OnParasiteDragDropDragged(Entity<XenoParasiteComponent> ent, ref DragDropDraggedEvent args)
     {
-        if (args.User != ent.Owner && !_rmcHands.IsPickupByAllowed(ent.Owner, args.User))
+        if (args.User != ent.Owner && !CanHandleParasite(ent, args.User))
             return;
 
         StartInfect(ent, args.Target, args.User);
@@ -260,6 +263,12 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
     private void OnParasiteTryPickup(Entity<XenoParasiteComponent> ent, ref GettingPickedUpAttemptEvent args)
     {
+        if (!CanHandleParasite(ent, args.User))
+        {
+            args.Cancel();
+            return;
+        }
+
         if (!HasComp<ParasiteAIComponent>(ent))
         {
             _popup.PopupClient(Loc.GetString("rmc-xeno-parasite-player-pickup", ("parasite", ent)), ent, args.User, PopupType.SmallCaution);
@@ -273,6 +282,12 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
             args.Cancel();
             return;
         }
+    }
+
+    private bool CanHandleParasite(Entity<XenoParasiteComponent> parasite, EntityUid user)
+    {
+        return _rmcHands.IsPickupByAllowed(parasite.Owner, user) &&
+               _cultist.CanHandleParasite(parasite.Owner, user);
     }
 
     private void OnParasiteBeforeDamageChanged(Entity<XenoParasiteComponent> ent, ref BeforeDamageChangedEvent args)
@@ -520,6 +535,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     private bool IsInfectable(Entity<XenoParasiteComponent> parasite, EntityUid victim)
     {
         return TryComp<InfectableComponent>(victim, out var infected)
+               && !_hive.FromSameHive(parasite.Owner, victim)
                && parasite.Comp.InfectedVictim == null
                && !infected.BeingInfected
                && !HasComp<ParasiteSpentComponent>(parasite)
@@ -565,7 +581,8 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
         return true;
     }
 
-    public bool Infect(Entity<XenoParasiteComponent> parasite, EntityUid victim, bool popup = true, bool force = false)
+    public bool Infect(Entity<XenoParasiteComponent> parasite, EntityUid victim, bool popup = true, bool force = false,
+        EntityUid? user = null)
     {
         if (!CanInfectPopup(parasite, victim, parasite, popup, force))
             return false;
@@ -617,6 +634,8 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
         unremovable.DeleteOnDrop = false;
 
         parasite.Comp.InfectedVictim = victim;
+        if (user != null)
+            SetInfector(parasite, user);
         parasite.Comp.FallOffAt = _timing.CurTime + parasite.Comp.FallOffDelay;
         Dirty(parasite);
 
@@ -627,6 +646,11 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
         ParasiteLeapHit(parasite);
         return true;
+    }
+
+    public void SetInfector(Entity<XenoParasiteComponent> parasite, EntityUid? user)
+    {
+        parasite.Comp.Infector = user;
     }
 
     public void RefreshIncubationMultipliers(Entity<VictimInfectedComponent?> ent)
@@ -722,6 +746,9 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
                 infectable.BeingInfected = false;
                 Dirty(infectedVictim, infectable);
+
+                var implanted = new Content.Shared._RMC14.Cultist.CultistParasiteImplantedEvent(para.Infector, uid);
+                RaiseLocalEvent(infectedVictim, ref implanted);
             }
         }
 

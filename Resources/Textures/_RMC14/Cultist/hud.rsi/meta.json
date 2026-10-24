@@ -1,0 +1,17 @@
+{
+  "version": 1,
+  "license": "CC-BY-SA-3.0",
+  "copyright": "CM-SS13 contributors, https://github.com/cmss13-devs/cmss13; unchanged sprites extracted from icons/mob/hud/hud.dmi (hudalien); icons/mob/hud/hud.dmi (hudalien_leader)",
+  "size": {
+    "x": 32,
+    "y": 32
+  },
+  "states": [
+    {
+      "name": "cultist"
+    },
+    {
+      "name": "leader"
+    }
+  ]
+}

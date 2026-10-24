@@ -1,6 +1,7 @@
 - type: job
   parent: RMCSyntheticColony
   id: RMCSyntheticColonyHybrisaXenoarch
+  canBeCultist: true
   startingGear: RMCGearSyntheticColonistHybrisaXenoarch
   spawnMenuRoleName: Xenoarchaeologist Synthetic (Hybrisa Survivor)
   special:

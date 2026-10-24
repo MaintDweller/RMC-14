@@ -2,6 +2,7 @@ using Content.Shared._RMC14.Actions;
 using Content.Shared._RMC14.Admin;
 using Content.Shared._RMC14.Areas;
 using Content.Shared._RMC14.CameraShake;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Emote;
 using Content.Shared._RMC14.Entrenching;
 using Content.Shared._RMC14.Gibbing;
@@ -11,7 +12,6 @@ using Content.Shared._RMC14.Pulling;
 using Content.Shared._RMC14.Stun;
 using Content.Shared._RMC14.Xenonids.Construction.Nest;
 using Content.Shared._RMC14.Xenonids.Devour;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared._RMC14.Xenonids.ScissorCut;
 using Content.Shared.ActionBlocker;
@@ -49,6 +49,7 @@ public abstract class SharedXenoDestroySystem : EntitySystem
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedInteractionSystem _interaction = default!;
     [Dependency] private readonly AreaSystem _area = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedJitteringSystem _jitter = default!;
     [Dependency] private readonly SharedDoAfterSystem _doafter = default!;
     [Dependency] private readonly TurfSystem _turf = default!;
@@ -63,7 +64,6 @@ public abstract class SharedXenoDestroySystem : EntitySystem
     [Dependency] private readonly DamageableSystem _damage = default!;
     [Dependency] private readonly RMCSizeStunSystem _size = default!;
     [Dependency] private readonly SharedBodySystem _body = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly RMCGibSystem _rmcGib = default!;
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly RMCCameraShakeSystem _cameraShake = default!;
@@ -271,7 +271,7 @@ public abstract class SharedXenoDestroySystem : EntitySystem
             return false;
 
         // hiveless xenos can attack eachother
-        if (_hive.FromSameHive(king, target))
+        if (_cultist.IsXenoDamageAlly(king, target))
             return false;
 
         if (HasComp<DevouredComponent>(target))

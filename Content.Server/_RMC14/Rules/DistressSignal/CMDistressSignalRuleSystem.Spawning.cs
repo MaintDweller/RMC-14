@@ -39,8 +39,8 @@ public sealed partial class CMDistressSignalRuleSystem
 
     /// <summary>
     /// Main handler for player spawning during the distress signal round.
-    /// Initializes the xeno map, sets up survivor jobs, applies job slot scaling,
-    /// selects and spawns xenos, and initializes dropships.
+    /// Initializes the planet and survivor jobs, spawns xenos and survivors,
+    /// scales marine jobs, and initializes dropships.
     /// </summary>
     private void OnRulePlayerSpawning(RulePlayerSpawningEvent ev)
     {
@@ -56,11 +56,13 @@ public sealed partial class CMDistressSignalRuleSystem
             return;
 
         SetupSurvivorJobs(comp);
+        _cultists.RollRoundstart(rule.Value, comp);
         ApplyJobSlotScaling(comp, ev);
 
         var initialPlayerCount = ev.PlayerPool.Count;
         SelectAndSpawnXenos(comp, ev);
-        SpawnSurvivors(comp, ev, initialPlayerCount);
+        var survivors = SpawnSurvivors(comp, ev, initialPlayerCount);
+        _cultists.SelectRoundstart(rule.Value, ev.Profiles, survivors, comp.Hive);
 
         if (_spawnedDropships) return;
 

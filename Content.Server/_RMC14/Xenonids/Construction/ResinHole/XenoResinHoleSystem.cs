@@ -1,4 +1,5 @@
 using System.Numerics;
+using Content.Shared._RMC14.Cultist;
 using Content.Server.Destructible;
 using Content.Shared._RMC14.OnCollide;
 using Content.Shared._RMC14.Xenonids;
@@ -45,6 +46,7 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
 {
     [Dependency] private readonly ISharedAdminLogManager _adminLogs = default!;
     [Dependency] private readonly SharedHandsSystem _hands = default!;
+    [Dependency] private readonly SharedXenoParasiteSystem _parasite = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly SharedInteractionSystem _interaction = default!;
     [Dependency] private readonly TurfSystem _turf = default!;
@@ -166,11 +168,14 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
             return;
 
         SetTrapType(resinHole, XenoResinHoleComponent.ParasitePrototype);
+        resinHole.Comp.ParasitePreparer = args.User;
         _popup.PopupEntity(Loc.GetString("rmc-xeno-construction-resin-hole-finished-parasite"), resinHole, args.User);
         QueueDel(args.Used);
 
         _appearanceSystem.SetData(resinHole.Owner, XenoResinHoleVisuals.Contained, ContainedTrap.Parasite);
         args.Handled = true;
+        var prepared = new CultistTrapPreparedEvent(args.User);
+        RaiseLocalEvent(resinHole, ref prepared);
     }
 
     private void OnEmptyHandInteract(Entity<XenoResinHoleComponent> resinHole, ref InteractHandEvent args)
@@ -316,7 +321,7 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
 
     private void OnXenoResinHoleTakeDamage(Entity<XenoResinHoleComponent> resinHole, ref DamageChangedEvent args)
     {
-        if (args.Origin is { } origin && _hive.FromSameHive(origin, resinHole.Owner))
+        if (args.Origin is { } origin && _cultist.IsHiveStructureProtected(origin, resinHole.Owner))
             return;
 
         //TODO Flames should make the trigger message never happen but destroyed will
@@ -508,7 +513,10 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
             _hive.SetSameHive(resinHole.Owner, trapEntity);
 
             if (trapEntityProto == XenoResinHoleComponent.ParasitePrototype)
+            {
                 EnsureComp<TrapParasiteComponent>(trapEntity);
+                _parasite.SetInfector((trapEntity, Comp<XenoParasiteComponent>(trapEntity)), comp.ParasitePreparer);
+            }
         }
 
         var msg = "rmc-xeno-construction-resin-hole-activate";

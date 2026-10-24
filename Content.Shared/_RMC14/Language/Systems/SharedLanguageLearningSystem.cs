@@ -1,5 +1,6 @@
 using System.Text;
 using System.Text.RegularExpressions;
+using Content.Shared._RMC14.Language;
 using Content.Shared._RMC14.Language.Components;
 using Content.Shared._RMC14.Language.Prototypes;
 using Robust.Shared.Prototypes;
@@ -13,7 +14,7 @@ public abstract class SharedLanguageLearningSystem : EntitySystem
     [Dependency] protected readonly IPrototypeManager _prototypeManager = default!;
     [Dependency] protected readonly IRobustRandom _random = default!;
 
-    protected static readonly Regex WordRegex = new(@"\b[a-zA-Z']+\b", RegexOptions.Compiled);
+    protected static readonly Regex WordRegex = new(@"\b[\p{L}\p{M}']+\b", RegexOptions.Compiled);
 
     public string ProcessMessageForListener(EntityUid listener, string message, ProtoId<LanguagePrototype> language)
     {
@@ -66,29 +67,27 @@ public abstract class SharedLanguageLearningSystem : EntitySystem
             var word = match.Value;
             var wordLower = word.ToLowerInvariant();
 
-            var wordComprehension = 0f;
+            var wordComprehension = defaultComprehension;
             if (learnedWords?.ContainsKey(wordLower) == true)
                 wordComprehension = learnedWords[wordLower];
-            else
+            else if (previewBoostedWordsRemaining > 0 && previewBoostedWordComprehension > 0f)
             {
-                if (previewBoostedWordsRemaining > 0 && previewBoostedWordComprehension > 0f)
-                {
-                    previewBoostedWords ??= new HashSet<string>();
+                previewBoostedWords ??= new HashSet<string>();
 
-                    if (previewBoostedWords.Add(wordLower))
-                        previewBoostedWordsRemaining--;
+                if (previewBoostedWords.Add(wordLower))
+                    previewBoostedWordsRemaining--;
 
-                    wordComprehension = Math.Max(previewBoostedWordComprehension, defaultComprehension);
-                }
-                else
-                {
-                    wordComprehension = Math.Max(overallComprehension, defaultComprehension);
-                }
+                wordComprehension = Math.Max(previewBoostedWordComprehension, defaultComprehension);
             }
 
+            var ev = new LanguageLearningWordEvent(language, wordComprehension);
+            RaiseLocalEvent(learningComp.Owner, ref ev);
             var effectiveComprehension = Math.Max(wordComprehension, overallComprehension);
-
-            if (effectiveComprehension >= thresholds.Clear)
+            if (ev.LetterByLetter)
+            {
+                result.Append(_language.ObfuscateMessageForDisplayWithComprehension(word, language, ev.Comprehension));
+            }
+            else if (effectiveComprehension >= thresholds.Clear)
             {
                 result.Append(word);
             }
@@ -169,6 +168,13 @@ public abstract class SharedLanguageLearningSystem : EntitySystem
 
     public float CalculateOverallComprehension(LanguageLearningComponent comp, ProtoId<LanguagePrototype> language)
     {
+        var ev = new LanguageLearningProgressEvent(language, CalculateRawComprehension(comp, language));
+        RaiseLocalEvent(comp.Owner, ref ev);
+        return ev.Progress;
+    }
+
+    private float CalculateRawComprehension(LanguageLearningComponent comp, ProtoId<LanguagePrototype> language)
+    {
         if (!comp.Languages.TryGetValue(language, out var languageData) ||
             languageData.LearnedWords.Count == 0)
         {
@@ -221,6 +227,11 @@ public abstract class SharedLanguageLearningSystem : EntitySystem
             return 0.0f;
 
         return CalculateOverallComprehension(comp, language);
+    }
+
+    public bool CanLearnLanguage(EntityUid entity, ProtoId<LanguagePrototype> language)
+    {
+        return TryComp<LanguageLearningComponent>(entity, out var comp) && comp.LearnableLanguages.Contains(language);
     }
 
     public Dictionary<string, float> GetLearnedWords(EntityUid entity, ProtoId<LanguagePrototype> language)

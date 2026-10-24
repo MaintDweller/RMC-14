@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorCorporate
   id: RMCSurvivorHybrisaCommercialPilot
+  canBeCultist: false
   name: rmc-job-name-survivor-commercial-pilot
   description: cm-job-description-survivor
   spawnMenuRoleName: Commercial Pilot (Hybrisa Survivor)

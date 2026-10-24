@@ -1,6 +1,7 @@
 using Content.Shared._RMC14.Atmos;
 using Content.Shared._RMC14.CCVar;
 using Content.Shared._RMC14.Commendations;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Damage;
 using Content.Shared._RMC14.Entrenching;
 using Content.Shared._RMC14.Marines;
@@ -65,6 +66,7 @@ public sealed partial class XenoSystem : EntitySystem
 {
     [Dependency] private readonly SharedActionsSystem _action = default!;
     [Dependency] private readonly IConfigurationManager _config = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly SharedEntityStorageSystem _entityStorage = default!;
     [Dependency] private readonly SharedEyeSystem _eye = default!;
@@ -225,7 +227,7 @@ public sealed partial class XenoSystem : EntitySystem
             return;
 
         // TODO RMC14 this still falsely plays the hit red flash effect on xenos if others are hit in a wide swing
-        if ((_xenoFriendlyQuery.HasComp(target) && _hive.FromSameHive(xeno.Owner, target)) ||
+        if ((_xenoFriendlyQuery.HasComp(target) && _cultist.IsXenoControlAlly(xeno.Owner, target)) ||
             _mobState.IsDead(target))
         {
             if (!args.Disarm)
@@ -505,7 +507,7 @@ public sealed partial class XenoSystem : EntitySystem
             return false;
 
         // hiveless xenos can attack eachother
-        if (_hive.FromSameHive(xeno, target))
+        if (_cultist.IsXenoControlAlly(xeno, target))
             return false;
 
         if (_mobState.IsDead(target))
@@ -523,7 +525,7 @@ public sealed partial class XenoSystem : EntitySystem
         if (canAttackWindows && HasComp<DestroyOnXenoPierceScissorComponent>(target))
             return true;
 
-        return HasComp<MarineComponent>(target) || HasComp<XenoComponent>(target);
+        return _cultist.IsXenoAbilityTarget(target);
     }
 
     public bool CanHeal(EntityUid xeno)

@@ -217,13 +217,20 @@ public sealed partial class NpcFactionSystem : EntitySystem
         }
     }
 
+    // RMC14
     /// <remarks>
-    /// 1-way and purely faction based, ignores faction exception.
+    /// 1-way faction relations and cultist hive alliances, ignores faction exceptions.
     /// </remarks>
+    // RMC14
     public bool IsEntityFriendly(Entity<NpcFactionMemberComponent?> ent, Entity<NpcFactionMemberComponent?> other)
     {
         if (!Resolve(ent, ref ent.Comp, false) || !Resolve(other, ref other.Comp, false))
             return false;
+
+        // RMC14
+        if (_cultist.IsNpcAlly(ent.Owner, other.Owner))
+            return true;
+        // RMC14
 
         return ent.Comp.Factions.Overlaps(other.Comp.Factions) || ent.Comp.FriendlyFactions.Overlaps(other.Comp.Factions);
     }

@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorEngineer
   id: CMSurvivorLV624CargoTechnician
+  canBeCultist: true
   name: rmc-job-name-survivor-lv624-cargo-technician
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorLV624CargoTechnician

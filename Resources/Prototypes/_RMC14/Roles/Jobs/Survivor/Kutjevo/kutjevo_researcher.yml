@@ -1,6 +1,7 @@
 ﻿- type: job
   parent: CMSurvivorScientist
   id: RMCSurvivorKutjevoResearcher
+  canBeCultist: true
   name: rmc-job-name-survivor-kutjevo-researcher
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorKutjevoResearcher

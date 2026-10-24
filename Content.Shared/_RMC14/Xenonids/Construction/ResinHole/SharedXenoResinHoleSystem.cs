@@ -1,4 +1,5 @@
 using Content.Shared._RMC14.Areas;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Hands;
 using Content.Shared._RMC14.Xenonids.Announce;
 using Content.Shared._RMC14.Xenonids.Hive;
@@ -17,6 +18,7 @@ namespace Content.Shared._RMC14.Xenonids.Construction.ResinHole;
 public abstract class SharedXenoResinHoleSystem : EntitySystem
 {
     [Dependency] protected readonly SharedAppearanceSystem _appearanceSystem = default!;
+    [Dependency] protected readonly CultistInteractionSystem _cultist = default!;
     [Dependency] protected readonly MobStateSystem _mobState = default!;
     [Dependency] protected readonly RMCHandsSystem _rmcHands = default!;
     [Dependency] protected readonly SharedXenoHiveSystem _hive = default!;
@@ -34,16 +36,17 @@ public abstract class SharedXenoResinHoleSystem : EntitySystem
         SubscribeLocalEvent<XenoResinHoleComponent, ActivateInWorldEvent>(OnActivateInWorldResinHole);
 
         SubscribeLocalEvent<XenoResinHoleComponent, XenoResinHoleActivationEvent>(OnResinHoleActivation);
-		SubscribeLocalEvent<XenoResinHoleComponent, GettingAttackedAttemptEvent>(OnXenoResinHoleAttacked);
-	}
+        SubscribeLocalEvent<XenoResinHoleComponent, GettingAttackedAttemptEvent>(OnXenoResinHoleAttacked);
+    }
 
-	private void OnXenoResinHoleAttacked(Entity<XenoResinHoleComponent> resinHole, ref GettingAttackedAttemptEvent args)
-	{
-		if (_hive.FromSameHive(args.Attacker, resinHole.Owner) && resinHole.Comp.TrapPrototype != null)
-			args.Cancelled = true;
-	}
+    private void OnXenoResinHoleAttacked(Entity<XenoResinHoleComponent> resinHole, ref GettingAttackedAttemptEvent args)
+    {
+        if (_cultist.IsHiveStructureProtected(args.Attacker, resinHole.Owner) &&
+            resinHole.Comp.TrapPrototype != null)
+            args.Cancelled = true;
+    }
 
-	protected bool CanPlaceInHole(EntityUid uid, Entity<XenoResinHoleComponent> resinHole, EntityUid user)
+    protected bool CanPlaceInHole(EntityUid uid, Entity<XenoResinHoleComponent> resinHole, EntityUid user)
     {
         if (!HasComp<XenoParasiteComponent>(uid) ||
             _mobState.IsDead(uid))
@@ -132,6 +135,7 @@ public abstract class SharedXenoResinHoleSystem : EntitySystem
     protected void SetTrapType(Entity<XenoResinHoleComponent> resinHole, string? newTrapPrototype)
     {
         resinHole.Comp.TrapPrototype = newTrapPrototype;
+        resinHole.Comp.ParasitePreparer = null;
         if (TryComp(resinHole.Owner, out XenoAnnounceStructureDestructionComponent? structureDestructionComp))
         {
             structureDestructionComp.StructureName = GetTrapTypeName(resinHole);

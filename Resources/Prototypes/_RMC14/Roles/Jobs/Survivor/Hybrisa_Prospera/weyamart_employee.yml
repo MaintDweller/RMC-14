@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: RMCSurvivorHybrisaWeyamartEmployee
+  canBeCultist: true
   name: rmc-job-name-survivor-hybrisa-weyamart-employee
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaWeyamartEmployee

@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivorScientist
   id: RMCSurvivorHybrisaXenobiologist
+  canBeCultist: true
   name: rmc-job-name-survivor-xenobiologist
   description: cm-job-description-survivor
   startingGear: RMCGearSurvivorHybrisaXenobiologist

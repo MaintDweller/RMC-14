@@ -39,6 +39,7 @@ public abstract partial class SharedXenoParasiteSystem
         SubscribeLocalEvent<ParasiteAIComponent, ExaminedEvent>(OnAIExamined);
         SubscribeLocalEvent<ParasiteAIComponent, DroppedEvent>(OnAIDropPickup);
         SubscribeLocalEvent<ParasiteAIComponent, EntGotInsertedIntoContainerMessage>(OnAIDropPickup);
+        SubscribeLocalEvent<ParasiteAIComponent, EntGotRemovedFromContainerMessage>(OnAIDropPickup);
 
         SubscribeLocalEvent<XenoParasiteComponent, GetVerbsEvent<ActivationVerb>>(OnGetVerbs);
 

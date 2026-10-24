@@ -1,6 +1,7 @@
 - type: job
   parent: CMSurvivor
   id: CMJobSurvivorReactorTechnician
+  canBeCultist: true
   name: rmc-job-name-survivor-reactor-technician
   description: cm-job-description-survivor
   playTimeTracker: CMJobSurvivorEngineer

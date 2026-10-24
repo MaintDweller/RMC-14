@@ -1,6 +1,7 @@
 using System.Numerics;
 using Content.Client._RMC14.Medical.HUD;
 using Content.Client._RMC14.NightVision;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Mobs;
 using Content.Shared._RMC14.Shields;
 using Content.Shared._RMC14.Stealth;
@@ -106,7 +107,8 @@ public sealed class XenoHudOverlay : Overlay
     {
         var isAdminGhost = _entity.TryGetComponent(_players.LocalEntity, out GhostComponent? ghost) &&
                            ghost.CanGhostInteract;
-        var isXeno = _entity.HasComponent<XenoComponent>(_players.LocalEntity);
+        var isXeno = _entity.HasComponent<XenoComponent>(_players.LocalEntity) ||
+                     _entity.HasComponent<CultistComponent>(_players.LocalEntity);
         var isGhost = false;
 
         if (!_entity.HasComponent<CMGhostXenoHudComponent>(_players.LocalEntity))
