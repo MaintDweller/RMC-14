@@ -1,5 +1,6 @@
 ﻿using Content.Shared._RMC14.Areas;
 using Content.Shared._RMC14.CCVar;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Marines;
 using Content.Shared._RMC14.Marines.Announce;
 using Content.Shared._RMC14.Rules;
@@ -67,7 +68,8 @@ public sealed class BioscanSystem : EntitySystem
         out int aliveShip,
         out int alivePlanet,
         out string warshipArea,
-        out string planetArea) where T : IComponent
+        out string planetArea,
+        bool excludeCultists = false) where T : IComponent
     {
         alive = default;
         aliveShip = default;
@@ -102,7 +104,7 @@ public sealed class BioscanSystem : EntitySystem
         var playersQuery = EntityQueryEnumerator<T, ActorComponent, MobStateComponent, TransformComponent>();
         while (playersQuery.MoveNext(out var uid, out _, out _, out var mobState, out var xform))
         {
-            if (!_mobState.IsAlive(uid, mobState))
+            if (!_mobState.IsAlive(uid, mobState) || excludeCultists && HasComp<CultistComponent>(uid))
                 continue;
 
             if (HasComp<ThunderdomeMapComponent>(xform.MapUid))
@@ -202,7 +204,8 @@ public sealed class BioscanSystem : EntitySystem
                 out var aliveShip,
                 out var alivePlanet,
                 out var warshipArea,
-                out var planetArea))
+                out var planetArea,
+                excludeCultists: true))
         {
             return;
         }
