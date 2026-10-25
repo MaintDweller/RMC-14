@@ -125,6 +125,33 @@ public sealed partial class CultistDevotionComponent : Component
     [DataField]
     public SoundSpecifier RitualSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/robes.ogg");
 
+    [DataField]
+    public EntProtoId[] SuccessionEffects = ["RMCEffectCultistSuccessionSeal", "RMCEffectCultistSuccessionCrown"];
+
+    [DataField]
+    public EntProtoId[] SuccessionParticipantEffects = ["RMCEffectCultistSuccessionParticipant"];
+
+    [DataField]
+    public EntProtoId[] ParasiteRiteEffects = ["RMCEffectCultistParasiteSeal", "RMCEffectCultistParasiteEgg"];
+
+    [DataField]
+    public EntProtoId[] SacrificeEffects = ["RMCEffectCultistSacrificeSeal", "RMCEffectCultistSacrificeClaws"];
+
+    [DataField]
+    public EntProtoId[] SacrificeParticipantEffects = ["RMCEffectCultistSacrificeParticipant"];
+
+    [DataField]
+    public EntProtoId[] RevelationEffects = ["RMCEffectCultistRevelationSeal", "RMCEffectCultistRevelationHalo"];
+
+    [DataField]
+    public EntProtoId[] RevelationParticipantEffects =
+    [
+        "RMCEffectCultistRevelationParticipant",
+        "RMCEffectCultistRevelationStream",
+        "RMCEffectCultistRevelationStreamSecond",
+        "RMCEffectCultistRevelationStreamThird",
+    ];
+
     public readonly HashSet<EntityUid> Members = new();
     public readonly Dictionary<(CultistDevotionSource Source, EntityUid Target), TimeSpan> RewardReadyAt = new();
     public readonly Dictionary<EntityUid, TimeSpan> TrapRewards = new();
@@ -147,6 +174,7 @@ public sealed class CultistRevelation
     public required EntityUid Leader;
     public required TimeSpan ExpiresAt;
     public readonly Dictionary<EntityUid, EntityCoordinates> Participants = new();
+    public readonly List<EntityUid> Effects = new();
     public bool Started;
     public DoAfterId? DoAfter;
 }
@@ -164,6 +192,8 @@ public enum CultistDevotionSource : byte
 
 public sealed class CultistSuccession
 {
+    public readonly List<EntityUid> Effects = new();
+
     public required int Id;
     public required EntityUid Candidate;
     public EntityUid? Supporter;

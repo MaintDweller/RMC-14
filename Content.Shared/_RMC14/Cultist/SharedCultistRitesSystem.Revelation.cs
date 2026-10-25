@@ -38,7 +38,7 @@ public sealed partial class SharedCultistRitesSystem
             CancelRevelation(group);
             return;
         }
-        ClearRevelation(group, ritual);
+        ClearRevelation(group, ritual, completed: true);
         comp.Devotion -= comp.RevelationCost;
         comp.Revealed = true;
         comp.RevelationRequired = false;
@@ -203,6 +203,13 @@ public sealed partial class SharedCultistRitesSystem
         if (ev.Handled)
             return;
         ritual.DoAfter = id;
+        StartRiteVisuals(ritual.Effects, group.Comp.RevelationEffects, ritual.Leader, group.Comp.RevelationDelay);
+        foreach (var participant in ritual.Participants.Keys)
+        {
+            if (participant != ritual.Leader)
+                StartRiteVisuals(ritual.Effects, group.Comp.RevelationParticipantEffects,
+                    participant, group.Comp.RevelationDelay, ritual.Leader);
+        }
         _audio.PlayPvs(group.Comp.RitualSound, ritual.Leader);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-revelation-started", ("leader", ritual.Leader),
             ("count", ritual.Participants.Count), ("seconds", group.Comp.RevelationDelay.TotalSeconds)), ritual.Leader);
@@ -241,9 +248,11 @@ public sealed partial class SharedCultistRitesSystem
             _popup.PopupEntity(Loc.GetString("rmc-cultist-revelation-interrupted"), ritual.Leader, ritual.Leader);
     }
 
-    private void ClearRevelation(Entity<CultistDevotionComponent> group, CultistRevelation ritual)
+    private void ClearRevelation(Entity<CultistDevotionComponent> group, CultistRevelation ritual,
+        bool completed = false)
     {
         group.Comp.Revelation = null;
+        EndRiteVisuals(ritual.Effects, completed);
         foreach (var member in ritual.Participants.Keys)
         {
             if (TryComp<CultistComponent>(member, out var cultist))

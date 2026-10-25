@@ -1,0 +1,34 @@
+- type: entity
+  parent: RMCBaseCultistRitualEffect
+  id: RMCEffectCultistParasiteSeal
+  components:
+  - type: CultistRitualEffect
+    scale: 0.9, 0.5
+    pulsePeriod: 1.25
+    maximumAlpha: 0.7
+    expansion: 0.05
+    completionDuration: 0.6
+    completionScale: 0.15
+  - type: Sprite
+    sprite: _RMC14/Cultist/parasite_rite.rsi
+    layers:
+    - state: seal
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistParasiteSeal
+  id: RMCEffectCultistParasiteEgg
+  components:
+  - type: CultistRitualEffect
+    scale: 0.52, 0.52
+    offset: 0, 0.15
+    drift: 0, 0.05
+    minimumAlpha: 0.25
+    maximumAlpha: 0.7
+    expansion: 0.15
+    completionScale: 0.08
+  - type: Sprite
+    drawdepth: Effects
+    layers:
+    - state: egg
+      shader: unshaded

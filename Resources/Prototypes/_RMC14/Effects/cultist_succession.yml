@@ -1,0 +1,42 @@
+- type: entity
+  parent: RMCBaseCultistRitualEffect
+  id: RMCEffectCultistSuccessionSeal
+  components:
+  - type: CultistRitualEffect
+    pulsePeriod: 2.4
+    completionDuration: 1.1
+    completionScale: 1.25
+  - type: Sprite
+    sprite: _RMC14/Cultist/succession.rsi
+    layers:
+    - state: seal
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistSuccessionSeal
+  id: RMCEffectCultistSuccessionParticipant
+  components:
+  - type: CultistRitualEffect
+    scale: 0.6, 0.6
+    maximumAlpha: 0.65
+
+- type: entity
+  parent: RMCEffectCultistSuccessionSeal
+  id: RMCEffectCultistSuccessionCrown
+  components:
+  - type: CultistRitualEffect
+    scale: 0.65, 0.65
+    offset: 0, 0.8
+    drift: 0, 0.1
+    sway: 0.05
+    rocking: 0.04
+    minimumAlpha: 0.4
+    maximumAlpha: 0.85
+    progressOpacity: 0.3
+    completionScale: 0.8
+    completionDrift: 0, 0.4
+  - type: Sprite
+    drawdepth: Effects
+    layers:
+    - state: crown
+      shader: unshaded

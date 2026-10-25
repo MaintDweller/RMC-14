@@ -1,0 +1,83 @@
+- type: entity
+  parent: RMCBaseCultistRitualEffect
+  id: RMCEffectCultistRevelationSeal
+  components:
+  - type: CultistRitualEffect
+    scale: 0.95, 0.95
+    pulsePeriod: 2.8
+    fadeIn: 0.7
+    minimumAlpha: 0.7
+    maximumAlpha: 1
+    progressOpacity: 0.45
+    progressExpansion: 0.12
+    completionDuration: 1.1
+    completionScale: 1.65
+  - type: Sprite
+    sprite: _RMC14/Cultist/revelation.rsi
+    layers:
+    - state: seal
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistRevelationSeal
+  id: RMCEffectCultistRevelationHalo
+  components:
+  - type: CultistRitualEffect
+    scale: 0.68, 0.68
+    offset: 0, 0.95
+    drift: 0, 0.12
+    rocking: 0.03
+    minimumAlpha: 0.2
+    maximumAlpha: 0.65
+    progressOpacity: 0.65
+    progressExpansion: 0.25
+    completionScale: 1.2
+    completionDrift: 0, 0.4
+  - type: Sprite
+    drawdepth: Effects
+    layers:
+    - state: halo
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistRevelationSeal
+  id: RMCEffectCultistRevelationParticipant
+  components:
+  - type: CultistRitualEffect
+    scale: 0.3, 0.3
+    maximumAlpha: 0.8
+    progressExpansion: 0.05
+    completionScale: 1.3
+
+- type: entity
+  parent: RMCBaseCultistRitualEffect
+  id: RMCEffectCultistRevelationStream
+  components:
+  - type: CultistRitualEffect
+    scale: 0.65, 0.65
+    travelToCenter: true
+    pulsePeriod: 2.8
+    minimumAlpha: 0.5
+    maximumAlpha: 0.8
+    progressOpacity: 0.3
+    completionDuration: 1.1
+    completionScale: 0.4
+  - type: Sprite
+    sprite: _RMC14/Cultist/revelation.rsi
+    layers:
+    - state: wisp
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistRevelationStream
+  id: RMCEffectCultistRevelationStreamSecond
+  components:
+  - type: CultistRitualEffect
+    phaseOffset: 0.333333
+
+- type: entity
+  parent: RMCEffectCultistRevelationStream
+  id: RMCEffectCultistRevelationStreamThird
+  components:
+  - type: CultistRitualEffect
+    phaseOffset: 0.666667

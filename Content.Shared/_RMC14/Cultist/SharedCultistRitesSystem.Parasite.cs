@@ -41,6 +41,7 @@ public sealed partial class SharedCultistRitesSystem
             return true;
 
         ent.Comp.ParasiteRitual = id;
+        StartRiteVisuals(ent.Comp.ParasiteEffects, group.Comp.ParasiteRiteEffects, ent, group.Comp.ParasiteRitualDelay);
         _audio.PlayPvs(group.Comp.RitualSound, ent);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-parasite-rite-started",
             ("seconds", group.Comp.ParasiteRitualDelay.TotalSeconds)), ent);
@@ -82,6 +83,7 @@ public sealed partial class SharedCultistRitesSystem
         ent.Comp.Channeling = false;
         if (args.Cancelled || !ValidParasiteRite(ent, args.Group, out var group))
         {
+            EndRiteVisuals(ent.Comp.ParasiteEffects);
             _popup.PopupEntity(Loc.GetString("rmc-cultist-parasite-rite-interrupted"), ent, ent);
             return;
         }
@@ -90,12 +92,14 @@ public sealed partial class SharedCultistRitesSystem
         if (_itemSlots.GetItemOrNull(capsule, ParasiteSlot) is not { } parasite ||
             !TryComp<XenoParasiteComponent>(parasite, out var parasiteComp))
         {
+            EndRiteVisuals(ent.Comp.ParasiteEffects);
             QueueDel(capsule);
             Log.Error($"Cultist parasite container {group.Comp.ParasiteContainer} has no parasite in {ParasiteSlot}.");
             return;
         }
 
         _hive.SetHive(parasite, group.Owner);
+        EndRiteVisuals(ent.Comp.ParasiteEffects, completed: true);
         _parasites.SetInfector((parasite, parasiteComp), ent);
         group.Comp.Devotion -= group.Comp.ParasiteCost;
         Dirty(group);

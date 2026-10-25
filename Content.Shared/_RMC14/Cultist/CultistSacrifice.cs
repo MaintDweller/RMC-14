@@ -5,6 +5,8 @@ namespace Content.Shared._RMC14.Cultist;
 
 public sealed class CultistSacrifice
 {
+    public readonly List<EntityUid> Effects = new();
+
     public required int Id;
     public required EntityUid Initiator;
     public required EntityUid Victim;

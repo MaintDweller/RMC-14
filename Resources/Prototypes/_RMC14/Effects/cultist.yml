@@ -1,0 +1,15 @@
+- type: entity
+  id: RMCBaseCultistRitualEffect
+  abstract: true
+  name: cult ritual
+  categories: [ HideSpawnMenu ]
+  components:
+  - type: TimedDespawn
+    lifetime: 2
+  - type: CultistRitualEffect
+  - type: Sprite
+    noRot: true
+    drawdepth: BelowMobs
+  - type: Tag
+    tags:
+    - HideContextMenu

@@ -1,0 +1,44 @@
+- type: entity
+  parent: RMCBaseCultistRitualEffect
+  id: RMCEffectCultistSacrificeSeal
+  components:
+  - type: CultistRitualEffect
+    scale: 1, 0.55
+    pulsePeriod: 0.95
+    minimumAlpha: 0.5
+    maximumAlpha: 0.85
+    expansion: -0.06
+    completionDuration: 0.55
+    completionScale: 0.1
+  - type: Sprite
+    sprite: _RMC14/Cultist/sacrifice.rsi
+    layers:
+    - state: seal
+      shader: unshaded
+
+- type: entity
+  parent: RMCEffectCultistSacrificeSeal
+  id: RMCEffectCultistSacrificeParticipant
+  components:
+  - type: CultistRitualEffect
+    scale: 0.55, 0.3
+    minimumAlpha: 0.35
+    maximumAlpha: 0.65
+
+- type: entity
+  parent: RMCEffectCultistSacrificeSeal
+  id: RMCEffectCultistSacrificeClaws
+  components:
+  - type: CultistRitualEffect
+    scale: 0.85, 0.85
+    offset: 0, -0.1
+    minimumAlpha: 0.15
+    maximumAlpha: 0.55
+    expansion: -0.18
+    progressExpansion: -0.12
+    rocking: 0.04
+  - type: Sprite
+    drawdepth: Effects
+    layers:
+    - state: claws
+      shader: unshaded

@@ -23,6 +23,7 @@ public sealed partial class SharedCultistRitesSystem
     {
         if (_net.IsClient)
             return;
+        EndRiteVisuals(ent.Comp.ParasiteEffects);
         CancelRitesByParticipant(ent, leaving: true);
         ReleaseRobes(ent);
     }
@@ -37,6 +38,8 @@ public sealed partial class SharedCultistRitesSystem
     {
         if (_net.IsClient)
             return;
+        if (ent.Comp.Ritual is { } ritual)
+            EndRiteVisuals(ritual.Effects);
         CancelSacrifice(ent);
         CancelRevelation(ent);
     }

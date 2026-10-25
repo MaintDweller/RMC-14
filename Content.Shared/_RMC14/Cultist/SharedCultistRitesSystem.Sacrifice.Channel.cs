@@ -42,6 +42,10 @@ public sealed partial class SharedCultistRitesSystem
         if (ev.Handled)
             return;
         ritual.DoAfter = id;
+        StartRiteVisuals(ritual.Effects, group.Comp.SacrificeEffects, ritual.Victim, group.Comp.SacrificeDelay);
+        StartRiteVisuals(ritual.Effects, group.Comp.SacrificeParticipantEffects,
+            ritual.Initiator, group.Comp.SacrificeDelay);
+        StartRiteVisuals(ritual.Effects, group.Comp.SacrificeParticipantEffects, supporter, group.Comp.SacrificeDelay);
         PulseSacrifice(group, ritual);
         _audio.PlayPvs(group.Comp.RitualSound, ritual.Initiator);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-sacrifice-started", ("first", ritual.Initiator),
@@ -96,7 +100,7 @@ public sealed partial class SharedCultistRitesSystem
         }
 
         // Clear the reservation before gib events; duplicate completions cannot consume the same victim twice.
-        ClearSacrifice(group, ritual);
+        ClearSacrifice(group, ritual, completed: true);
         _rmcGib.ScatterInventoryItems(ritual.Victim);
         _body.GibBody(ritual.Victim, true, body);
         if (!EntityManager.IsQueuedForDeletion(ritual.Victim))
@@ -119,9 +123,11 @@ public sealed partial class SharedCultistRitesSystem
             _popup.PopupEntity(Loc.GetString("rmc-cultist-sacrifice-interrupted"), ritual.Initiator);
     }
 
-    private void ClearSacrifice(Entity<CultistDevotionComponent> group, CultistSacrifice ritual)
+    private void ClearSacrifice(Entity<CultistDevotionComponent> group, CultistSacrifice ritual,
+        bool completed = false)
     {
         group.Comp.Sacrifice = null;
+        EndRiteVisuals(ritual.Effects, completed);
         if (TryComp<CultistComponent>(ritual.Initiator, out var initiator))
             initiator.Channeling = false;
         if (ritual.Supporter is { } supporter && TryComp<CultistComponent>(supporter, out var helper))

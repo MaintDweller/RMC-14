@@ -305,6 +305,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         if (group.Comp.Ritual is not { } ritual)
             return;
         group.Comp.Ritual = null;
+        EndRiteVisuals(ritual.Effects);
         if (TryComp<CultistComponent>(ritual.Candidate, out var candidate))
             candidate.Channeling = false;
         if (ritual.Supporter is { } supporter && TryComp<CultistComponent>(supporter, out var helper))
@@ -326,6 +327,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
             RemCompDeferred<CultistDevotionComponent>(uid);
         }
         _sacrificeTargets.Clear();
+        ClearRiteVisuals();
         _nextUpdate = TimeSpan.Zero;
     }
 

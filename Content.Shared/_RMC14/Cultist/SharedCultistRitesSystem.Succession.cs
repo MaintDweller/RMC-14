@@ -85,6 +85,12 @@ public sealed partial class SharedCultistRitesSystem
         Comp<CultistComponent>(ritual.Candidate).Channeling = true;
         if (ritual.Supporter is { } helper)
             Comp<CultistComponent>(helper).Channeling = true;
+        if (!ev.Handled)
+        {
+            StartRiteVisuals(ritual.Effects, group.Comp.SuccessionEffects, ritual.Candidate, delay);
+            if (ritual.Supporter is { } visualSupporter)
+                StartRiteVisuals(ritual.Effects, group.Comp.SuccessionParticipantEffects, visualSupporter, delay);
+        }
         _audio.PlayPvs(group.Comp.RitualSound, ritual.Candidate);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-rite-started", ("candidate", ritual.Candidate),
             ("seconds", (int) delay.TotalSeconds)), ritual.Candidate);
@@ -134,6 +140,7 @@ public sealed partial class SharedCultistRitesSystem
 
         // Invalidate the rite before changing actions; a second completion cannot spend or promote twice.
         comp.Ritual = null;
+        EndRiteVisuals(ritual.Effects, completed: true);
         comp.Devotion -= ritual.Cost;
         if (ritual.Cost > 0)
             comp.UsurpationReadyAt = _timing.CurTime + comp.UsurpationCooldown;

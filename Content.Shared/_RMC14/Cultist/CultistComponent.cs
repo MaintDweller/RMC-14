@@ -20,6 +20,8 @@ public sealed partial class CultistComponent : Component
 
     public DoAfterId? ParasiteRitual;
 
+    public readonly List<EntityUid> ParasiteEffects = new();
+
     public EntityUid? Robe;
     public EntityUid? Hood;
 
