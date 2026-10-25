@@ -4,12 +4,6 @@
   categories: [ HideSpawnMenu ]
   components:
   - type: Cultist
-    components:
-    - type: NightVision
-      innate: true
-      state: half
-      onlyHalf: true
-      alert: XenoNightVision
 
 - type: entity
   parent: RMCCultistEffects

@@ -23,9 +23,6 @@ public sealed partial class CultistComponent : Component
     public EntityUid? Robe;
     public EntityUid? Hood;
 
-    [DataField]
-    public ComponentRegistry Components = new();
-
     [DataField, AutoNetworkedField]
     public EntProtoId ConvertAction = "RMCActionCultistConvert";
 

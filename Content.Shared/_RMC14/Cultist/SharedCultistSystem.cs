@@ -68,7 +68,6 @@ public sealed partial class SharedCultistSystem : EntitySystem
         if (_net.IsClient)
             return;
 
-        EntityManager.AddComponents(ent, ent.Comp.Components);
         _actions.AddAction(ent, ref ent.Comp.FriendlyFireActionEntity, ent.Comp.FriendlyFireAction);
         _actions.AddAction(ent, ref ent.Comp.RitesActionEntity, ent.Comp.RitesAction);
         _actions.SetToggled(ent.Comp.FriendlyFireActionEntity, ent.Comp.AllowFriendlyFire);
