@@ -30,6 +30,16 @@ public enum CultistRiteChoice : byte
     Back,
     Parasite,
     Sacrifice,
+    Revelation,
+    JoinRevelation,
+    CancelRevelation,
+}
+
+[Serializable, NetSerializable]
+public sealed partial class CultistRevelationDoAfterEvent : SimpleDoAfterEvent
+{
+    public NetEntity Group;
+    public int RitualId;
 }
 
 [Serializable, NetSerializable]

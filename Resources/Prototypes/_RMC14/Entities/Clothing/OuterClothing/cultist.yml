@@ -1,0 +1,21 @@
+- type: entity
+  parent: [ClothingOuterBaseMedium, RMCAllowSuitStorageClothingArmor]
+  id: RMCCultistRobe
+  name: black robe
+  description: An eerie black robe worn by devotees of the hive.
+  components:
+  - type: Sprite
+    sprite: _RMC14/Cultist/robe.rsi
+    state: icon
+  - type: Clothing
+    sprite: _RMC14/Cultist/robe.rsi
+  - type: CMArmor
+    melee: 15
+    bullet: 15
+    bio: 10
+    explosionArmor: 10
+  - type: ClothingSpeedModifier
+    walkModifier: 0.725
+    sprintModifier: 0.725
+  - type: RMCArmorSpeedTier
+    speedTier: light

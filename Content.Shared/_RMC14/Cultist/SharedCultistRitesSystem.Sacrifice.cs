@@ -38,7 +38,7 @@ public sealed partial class SharedCultistRitesSystem
             _lookup.GetEntitiesInRange(Transform(ent).Coordinates, group.Comp.RitualRange, _sacrificeTargets);
             foreach (var target in _sacrificeTargets)
             {
-                if (!CanSacrificeVictim(target, group) || !InSacrificeRange(ent, target, group) ||
+                if (!CanSacrificeVictim(target, group) || !InRitualRange(ent, target, group) ||
                     IsSacrificeReserved(target))
                     continue;
                 options.Add(new DialogOption(Loc.GetString("rmc-cultist-sacrifice-offer", ("victim", target.Owner)),
@@ -77,7 +77,7 @@ public sealed partial class SharedCultistRitesSystem
         {
             if (!CanBeginSacrifice(ent, group) || ritual.Initiator == ent.Owner || ritual.Started ||
                 ritual.ExpiresAt <= _timing.CurTime || !ValidSacrifice(group, ritual) ||
-                !InSacrificeRange(ent, victim, group))
+                !InRitualRange(ent, victim, group))
             {
                 SacrificeUnavailable(ent);
                 return;
@@ -93,7 +93,7 @@ public sealed partial class SharedCultistRitesSystem
     private bool OfferSacrifice(Entity<CultistComponent> ent, Entity<CultistDevotionComponent> group, EntityUid victim)
     {
         if (!CanBeginSacrifice(ent, group) || group.Comp.Sacrifice != null ||
-            !CanSacrificeVictim(victim, group) || !InSacrificeRange(ent, victim, group) || IsSacrificeReserved(victim))
+            !CanSacrificeVictim(victim, group) || !InRitualRange(ent, victim, group) || IsSacrificeReserved(victim))
             return false;
 
         group.Comp.Sacrifice = new CultistSacrifice
@@ -126,12 +126,6 @@ public sealed partial class SharedCultistRitesSystem
                !HasComp<GodmodeComponent>(victim) && !_hive.IsMember(victim, group.Owner) &&
                !_container.IsEntityInContainer(victim) && !HasComp<VictimInfectedComponent>(victim) &&
                (!TryComp<InfectableComponent>(victim, out var infectable) || !infectable.BeingInfected);
-    }
-
-    private bool InSacrificeRange(EntityUid participant, EntityUid victim, Entity<CultistDevotionComponent> group)
-    {
-        return !EntityManager.IsQueuedForDeletion(participant) && !_container.IsEntityInContainer(participant) &&
-               _interaction.InRangeUnobstructed(participant, victim, group.Comp.RitualRange);
     }
 
     private bool IsSacrificeReserved(EntityUid victim)

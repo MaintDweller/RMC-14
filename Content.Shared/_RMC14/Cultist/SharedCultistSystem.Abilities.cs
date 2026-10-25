@@ -11,7 +11,7 @@ public sealed partial class SharedCultistSystem
     private void OnConvertAction(Entity<CultistComponent> ent, ref CultistConvertActionEvent args)
     {
         if (args.Handled || _net.IsClient || ent.Comp.Channeling || ConversionOnCooldown(ent) ||
-            !CanTarget(ent, args.Target, true))
+            !CanTarget(ent, args.Target, true) || !CanRecruit(ent, true))
             return;
 
         var ev = new CultistConvertDoAfterEvent();
@@ -32,7 +32,8 @@ public sealed partial class SharedCultistSystem
     private void OnConvertAttempt(Entity<CultistComponent> ent,
         ref DoAfterAttemptEvent<CultistConvertDoAfterEvent> args)
     {
-        if (ConversionOnCooldown(ent) || args.DoAfter.Args.Target is not { } target || !CanTarget(ent, target) ||
+        if (ConversionOnCooldown(ent) || !CanRecruit(ent) ||
+            args.DoAfter.Args.Target is not { } target || !CanTarget(ent, target) ||
             !TargetUnchanged(args.Event, target, ent.Comp.MovementThreshold))
             args.Cancel();
     }
@@ -43,7 +44,7 @@ public sealed partial class SharedCultistSystem
             return;
 
         ent.Comp.Channeling = false;
-        if (args.Cancelled || ConversionOnCooldown(ent) || args.Target is not { } target ||
+        if (args.Cancelled || ConversionOnCooldown(ent) || !CanRecruit(ent) || args.Target is not { } target ||
             !CanTarget(ent, target) || _hive.GetHive(ent.Owner) is not { } hive)
             return;
 
@@ -142,5 +143,35 @@ public sealed partial class SharedCultistSystem
         return original.TryDistance(EntityManager, Transform(target).Coordinates, out var distance) &&
                distance <= movementThreshold &&
                (CompOrNull<DamageableComponent>(target)?.TotalDamage ?? FixedPoint2.Zero) <= ev.TargetDamage;
+    }
+
+    private bool CanRecruit(EntityUid leader, bool popup = false)
+    {
+        if (_hive.GetHive(leader) is not { } hive ||
+            !TryComp<CultistDevotionComponent>(hive, out var group) ||
+            group.Revealed || !group.RevelationRequired || CanRecruitCompanion(leader, (hive, group)))
+            return true;
+
+        if (popup)
+            _popup.PopupEntity(Loc.GetString("rmc-cultist-recruitment-sealed",
+                ("limit", group.ConcealedMemberLimit)), leader, leader);
+        return false;
+    }
+
+    public bool CanRecruitCompanion(EntityUid leader, Entity<CultistDevotionComponent> group)
+    {
+        if (group.Comp.Leader != leader || !TryComp<CultistComponent>(leader, out var cultist) ||
+            !cultist.Leader || !_mobState.IsAlive(leader))
+            return false;
+
+        foreach (var member in group.Comp.Members)
+        {
+            if (member == leader || TerminatingOrDeleted(member) || !HasComp<CultistComponent>(member) ||
+                _hive.GetHive(member)?.Owner != group.Owner)
+                continue;
+            if (!_mobState.IsDead(member) || !_unrevivable.IsUnrevivable(member))
+                return false;
+        }
+        return true;
     }
 }

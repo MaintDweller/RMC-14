@@ -1,4 +1,5 @@
 using Content.Shared._RMC14.Marines.Skills;
+using Content.Shared._RMC14.Medical.Unrevivable;
 using Content.Shared._RMC14.Slow;
 using Content.Shared._RMC14.Stun;
 using Content.Shared._RMC14.Synth;
@@ -40,6 +41,7 @@ public sealed partial class SharedCultistSystem : EntitySystem
     [Dependency] private readonly SkillsSystem _skills = default!;
     [Dependency] private readonly RMCSlowSystem _slow = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
+    [Dependency] private readonly RMCUnrevivableSystem _unrevivable = default!;
 
     private static readonly ProtoId<SpeciesPrototype> HumanSpecies = "Human";
     private static readonly EntProtoId CultistEffects = "RMCCultistEffects";

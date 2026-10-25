@@ -1,0 +1,21 @@
+- type: entity
+  parent: ClothingHeadBase
+  id: RMCCultistHood
+  name: black hood
+  description: A dark hood that conceals the wearer's head.
+  components:
+  - type: Sprite
+    sprite: _RMC14/Cultist/hood.rsi
+    state: icon
+  - type: Clothing
+    sprite: _RMC14/Cultist/hood.rsi
+  - type: HideLayerClothing
+    slots:
+    - Hair
+    - HeadTop
+    - HeadSide
+  - type: CMArmor
+    melee: 15
+    bullet: 15
+    bio: 10
+    explosionArmor: 10

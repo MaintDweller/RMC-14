@@ -1,3 +1,4 @@
+using Content.Shared.DoAfter;
 using Content.Shared.FixedPoint;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
@@ -15,6 +16,30 @@ public sealed partial class CultistDevotionComponent : Component
 
     [DataField]
     public int Capacity = 100;
+
+    [DataField]
+    public int ConcealedMemberLimit = 10;
+
+    [AutoNetworkedField]
+    public bool RevelationRequired;
+
+    [AutoNetworkedField]
+    public bool Revealed;
+
+    [DataField]
+    public TimeSpan RevelationDelay = TimeSpan.FromSeconds(30);
+
+    [DataField]
+    public int RevelationCost = 50;
+
+    [DataField]
+    public float RevelationRange = 8;
+
+    [DataField]
+    public EntProtoId Robe = "RMCCultistRobe";
+
+    [DataField]
+    public EntProtoId Hood = "RMCCultistHood";
 
     [DataField]
     public Dictionary<CultistDevotionSource, int> Rewards = new()
@@ -112,6 +137,18 @@ public sealed partial class CultistDevotionComponent : Component
     public CultistSuccession? Ritual;
     public int NextSacrificeId;
     public CultistSacrifice? Sacrifice;
+    public int NextRevelationId;
+    public CultistRevelation? Revelation;
+}
+
+public sealed class CultistRevelation
+{
+    public required int Id;
+    public required EntityUid Leader;
+    public required TimeSpan ExpiresAt;
+    public readonly Dictionary<EntityUid, EntityCoordinates> Participants = new();
+    public bool Started;
+    public DoAfterId? DoAfter;
 }
 
 public enum CultistDevotionSource : byte

@@ -12,7 +12,7 @@ public sealed partial class SharedCultistRitesSystem
     {
         if (_net.IsClient || candidate.Comp.Leader || candidate.Comp.Channeling ||
             HasComp<SynthComponent>(candidate) || GetGroup(candidate) is not { } group ||
-            group.Comp.Ritual != null || !Ready(candidate, group))
+            group.Comp.Ritual != null || group.Comp.Revelation != null || !Ready(candidate, group))
             return false;
 
         var ritual = new CultistSuccession

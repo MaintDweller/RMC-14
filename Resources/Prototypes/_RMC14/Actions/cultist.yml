@@ -2,11 +2,11 @@
   parent: ActionMarineBase
   id: RMCActionCultistRites
   name: Hive Rites
-  description: View your cult's shared Devotion, nurture a parasite, perform a joint sacrifice or arrange a succession ritual. Another cultist can join through their own Hive Rites button.
+  description: View your cult's shared Devotion, nurture a parasite, perform a joint sacrifice, arrange succession or reveal the cult in bound robes. Another cultist can join through their own Hive Rites button.
   components:
   - type: Action
     itemIconStyle: NoItem
-    icon: { sprite: _RMC14/Cultist/rites.rsi, state: rites }
+    icon: { sprite: _RMC14/Cultist/actions.rsi, state: revelation }
   - type: InstantAction
     event: !type:CultistRitesActionEvent
 

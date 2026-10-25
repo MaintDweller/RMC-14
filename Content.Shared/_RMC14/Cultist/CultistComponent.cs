@@ -20,6 +20,9 @@ public sealed partial class CultistComponent : Component
 
     public DoAfterId? ParasiteRitual;
 
+    public EntityUid? Robe;
+    public EntityUid? Hood;
+
     [DataField]
     public ComponentRegistry Components = new();
 

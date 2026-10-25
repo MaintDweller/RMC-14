@@ -12,6 +12,7 @@ using Content.Shared.DoAfter;
 using Content.Shared.GameTicking;
 using Content.Shared.Hands.EntitySystems;
 using Content.Shared.Interaction;
+using Content.Shared.Inventory;
 using Content.Shared.Jittering;
 using Content.Shared.Mind.Components;
 using Content.Shared.Mobs.Systems;
@@ -38,6 +39,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
     [Dependency] private readonly SharedHandsSystem _hands = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly SharedInteractionSystem _interaction = default!;
+    [Dependency] private readonly InventorySystem _inventory = default!;
     [Dependency] private readonly ItemSlotsSystem _itemSlots = default!;
     [Dependency] private readonly SharedJitteringSystem _jitter = default!;
     [Dependency] private readonly EntityLookupSystem _lookup = default!;
@@ -63,6 +65,9 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         SubscribeLocalEvent<RoundRestartCleanupEvent>(OnRoundRestart);
         InitializeParasiteRite();
         InitializeSacrificeRite();
+        InitializeRevelationRite();
+        InitializeRiteParticipants();
+        InitializeRobes();
     }
 
     private void OnJoined(Entity<CultistComponent> ent, ref CultistJoinedEvent args)
@@ -73,7 +78,16 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         if (!HasComp<CultistDevotionComponent>(hive))
             EntityManager.AddComponents(hive, _prototypes.Index(DevotionSettings));
         var group = Comp<CultistDevotionComponent>(hive);
+        group.Members.RemoveWhere(member => TerminatingOrDeleted(member) ||
+            !HasComp<CultistComponent>(member) || _hive.GetHive(member)?.Owner != hive.Owner);
         group.Members.Add(ent);
+        if (!group.Revealed && group.Members.Count >= group.ConcealedMemberLimit)
+        {
+            group.RevelationRequired = true;
+            Dirty(hive, group);
+        }
+        if (group.Revealed && !_mobState.IsDead(ent))
+            EquipRobes(ent, (hive, group));
         if (!ent.Comp.Leader)
             return;
 
@@ -160,12 +174,15 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
                 ("seconds", group.Comp.ParasiteRitualDelay.TotalSeconds))));
         options.Add(new DialogOption(Loc.GetString("rmc-cultist-rite-sacrifice"),
             new CultistRiteChoiceEvent(GetNetEntity(group), 0, CultistRiteChoice.Sacrifice)));
+        AddRevelationOptions(ent, group, options);
         var settings = group.Comp;
         var message = ritual == null ? Loc.GetString("rmc-cultist-rites-idle") :
             Loc.GetString(ritual.Started ? "rmc-cultist-rites-channeling" : "rmc-cultist-rites-waiting",
                 ("candidate", ritual.Candidate));
         if (showHelp)
             options = HelpOptions(group);
+        else
+            message += "\n" + RevelationStatus(group);
         _dialog.OpenOptions(ent, Loc.GetString("rmc-cultist-rites-title", ("balance", settings.Devotion),
             ("capacity", settings.Capacity)), options, showHelp ? "" : message, enableSearch: false);
     }
@@ -196,6 +213,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         [
             new DialogOption(Loc.GetString("rmc-cultist-rites-succession-help"), description: help),
             new DialogOption(Loc.GetString("rmc-cultist-rites-rewards-help"), description: rewardHelp),
+            new DialogOption(Loc.GetString("rmc-cultist-rite-revelation"), description: RevelationDescription(group)),
             new DialogOption(Loc.GetString("rmc-cultist-rites-back"),
                 new CultistRiteChoiceEvent(GetNetEntity(group), 0, CultistRiteChoice.Back)),
         ];
@@ -224,6 +242,13 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         if (args.Choice == CultistRiteChoice.Sacrifice)
         {
             OpenSacrificeMenu(ent, group);
+            return;
+        }
+
+        if (args.Choice is CultistRiteChoice.Revelation or CultistRiteChoice.JoinRevelation or
+            CultistRiteChoice.CancelRevelation)
+        {
+            OnRevelationChoice(ent, group, args);
             return;
         }
 
@@ -297,6 +322,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         {
             CancelRitual((uid, group));
             CancelSacrifice((uid, group));
+            CancelRevelation((uid, group));
             RemCompDeferred<CultistDevotionComponent>(uid);
         }
         _sacrificeTargets.Clear();
@@ -312,6 +338,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         while (query.MoveNext(out var uid, out var group))
         {
             UpdateSacrifice((uid, group));
+            UpdateRevelation((uid, group));
             if (group.Leader is { } leader && !TerminatingOrDeleted(leader) && HasComp<ActorComponent>(leader))
                 group.LeaderAbsentSince = null;
             else

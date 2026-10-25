@@ -1,8 +1,6 @@
 using Content.Shared.Body.Components;
-using Content.Shared.Damage;
 using Content.Shared.Database;
 using Content.Shared.DoAfter;
-using Robust.Shared.Player;
 
 namespace Content.Shared._RMC14.Cultist;
 
@@ -13,10 +11,6 @@ public sealed partial class SharedCultistRitesSystem
         SubscribeLocalEvent<CultistComponent, CultistSacrificeChoiceEvent>(OnSacrificeChoice);
         SubscribeLocalEvent<CultistComponent, CultistSacrificeDoAfterEvent>(OnSacrificeDoAfter);
         SubscribeLocalEvent<CultistComponent, DoAfterAttemptEvent<CultistSacrificeDoAfterEvent>>(OnSacrificeAttempt);
-        SubscribeLocalEvent<CultistComponent, DamageChangedEvent>(OnSacrificeParticipantDamaged);
-        SubscribeLocalEvent<CultistComponent, CultistLeftEvent>(OnSacrificeParticipantLeft);
-        SubscribeLocalEvent<CultistComponent, PlayerDetachedEvent>(OnSacrificeParticipantDetached);
-        SubscribeLocalEvent<CultistDevotionComponent, ComponentShutdown>(OnSacrificeGroupShutdown);
     }
 
     private void StartSacrifice(Entity<CultistDevotionComponent> group, CultistSacrifice ritual)
@@ -58,13 +52,13 @@ public sealed partial class SharedCultistRitesSystem
     private bool ValidSacrifice(Entity<CultistDevotionComponent> group, CultistSacrifice ritual)
     {
         if (!Ready(ritual.Initiator, group) || !Comp<CultistComponent>(ritual.Initiator).Channeling ||
-            !CanSacrificeVictim(ritual.Victim, group) || !InSacrificeRange(ritual.Initiator, ritual.Victim, group))
+            !CanSacrificeVictim(ritual.Victim, group) || !InRitualRange(ritual.Initiator, ritual.Victim, group))
             return false;
         if (!ritual.Started)
             return true;
 
         return ritual.Supporter is { } supporter && supporter != ritual.Initiator && Ready(supporter, group) &&
-               Comp<CultistComponent>(supporter).Channeling && InSacrificeRange(supporter, ritual.Victim, group) &&
+               Comp<CultistComponent>(supporter).Channeling && InRitualRange(supporter, ritual.Victim, group) &&
                ritual.SupporterPosition.TryDistance(EntityManager, Transform(supporter).Coordinates,
                    out var helperMovement) &&
                helperMovement <= Comp<CultistComponent>(supporter).MovementThreshold &&
@@ -152,40 +146,5 @@ public sealed partial class SharedCultistRitesSystem
         // Short pulses expire after cancellation without removing jitter caused by another mechanic.
         _jitter.DoJitter(ritual.Victim, group.Comp.SacrificeJitterTime, true,
             group.Comp.SacrificeJitterAmplitude, group.Comp.SacrificeJitterFrequency);
-    }
-
-    private void OnSacrificeParticipantDamaged(Entity<CultistComponent> ent, ref DamageChangedEvent args)
-    {
-        if (_net.IsServer && args.DamageIncreased)
-            CancelSacrificesByParticipant(ent);
-    }
-
-    private void OnSacrificeParticipantLeft(Entity<CultistComponent> ent, ref CultistLeftEvent args)
-    {
-        if (_net.IsServer)
-            CancelSacrificesByParticipant(ent);
-    }
-
-    private void OnSacrificeParticipantDetached(Entity<CultistComponent> ent, ref PlayerDetachedEvent args)
-    {
-        if (_net.IsServer)
-            CancelSacrificesByParticipant(ent);
-    }
-
-    private void OnSacrificeGroupShutdown(Entity<CultistDevotionComponent> ent, ref ComponentShutdown args)
-    {
-        if (_net.IsServer)
-            CancelSacrifice(ent);
-    }
-
-    private void CancelSacrificesByParticipant(EntityUid participant)
-    {
-        var query = EntityQueryEnumerator<CultistDevotionComponent>();
-        while (query.MoveNext(out var uid, out var group))
-        {
-            if (group.Sacrifice is { } ritual &&
-                (ritual.Initiator == participant || ritual.Supporter == participant))
-                CancelSacrifice((uid, group));
-        }
     }
 }
