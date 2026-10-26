@@ -56,7 +56,8 @@ public sealed partial class SharedCultistRitesSystem
 
     private void OnSacrificeChoice(Entity<CultistComponent> ent, ref CultistSacrificeChoiceEvent args)
     {
-        if (_net.IsClient || GetGroup(ent) is not { } group || GetEntity(args.Group) != group.Owner ||
+        if (_net.IsClient || _cultist.GetGroup(ent.AsNullable()) is not { } group ||
+            GetEntity(args.Group) != group.Owner ||
             !Ready(ent, group))
             return;
 
@@ -123,7 +124,7 @@ public sealed partial class SharedCultistRitesSystem
                TryComp<HumanoidAppearanceComponent>(victim, out var appearance) &&
                appearance.Species == SacrificeSpecies && !HasComp<SynthComponent>(victim) &&
                !HasComp<XenoComponent>(victim) && !HasComp<CultistComponent>(victim) &&
-               !HasComp<GodmodeComponent>(victim) && !_hive.IsMember(victim, group.Owner) &&
+               !HasComp<GodmodeComponent>(victim) && !_hive.IsMember(victim, group.Comp.Hive) &&
                !_container.IsEntityInContainer(victim) && !HasComp<VictimInfectedComponent>(victim) &&
                (!TryComp<InfectableComponent>(victim, out var infectable) || !infectable.BeingInfected);
     }

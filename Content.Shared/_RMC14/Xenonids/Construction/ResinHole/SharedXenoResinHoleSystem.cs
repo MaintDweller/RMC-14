@@ -1,5 +1,4 @@
 using Content.Shared._RMC14.Areas;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Hands;
 using Content.Shared._RMC14.Xenonids.Announce;
 using Content.Shared._RMC14.Xenonids.Hive;
@@ -18,7 +17,6 @@ namespace Content.Shared._RMC14.Xenonids.Construction.ResinHole;
 public abstract class SharedXenoResinHoleSystem : EntitySystem
 {
     [Dependency] protected readonly SharedAppearanceSystem _appearanceSystem = default!;
-    [Dependency] protected readonly CultistInteractionSystem _cultist = default!;
     [Dependency] protected readonly MobStateSystem _mobState = default!;
     [Dependency] protected readonly RMCHandsSystem _rmcHands = default!;
     [Dependency] protected readonly SharedXenoHiveSystem _hive = default!;
@@ -41,7 +39,7 @@ public abstract class SharedXenoResinHoleSystem : EntitySystem
 
     private void OnXenoResinHoleAttacked(Entity<XenoResinHoleComponent> resinHole, ref GettingAttackedAttemptEvent args)
     {
-        if (_cultist.IsHiveStructureProtected(args.Attacker, resinHole.Owner) &&
+        if (_hive.FromSameHive(resinHole.Owner, args.Attacker) &&
             resinHole.Comp.TrapPrototype != null)
             args.Cancelled = true;
     }

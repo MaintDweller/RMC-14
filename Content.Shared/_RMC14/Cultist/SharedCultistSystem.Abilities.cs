@@ -45,13 +45,13 @@ public sealed partial class SharedCultistSystem
 
         ent.Comp.Channeling = false;
         if (args.Cancelled || ConversionOnCooldown(ent) || !CanRecruit(ent) || args.Target is not { } target ||
-            !CanTarget(ent, target) || _hive.GetHive(ent.Owner) is not { } hive)
+            !CanTarget(ent, target) || GetSupportedHive(ent.AsNullable()) is not { } hive ||
+            GetGroup(ent.AsNullable()) is not { } group)
             return;
 
         args.Handled = true;
         _actions.SetCooldown(ent.Comp.ConvertActionEntity, ent.Comp.ConversionCooldown);
-        if (TryComp<CultistDevotionComponent>(hive, out var group))
-            group.ConversionReadyAt = _timing.CurTime + ent.Comp.ConversionCooldown;
+        group.Comp.ConversionReadyAt = _timing.CurTime + ent.Comp.ConversionCooldown;
         MakeCultist(target, hive);
         _sizeStun.TryKnockOut(target, ent.Comp.ConversionKnockout);
         _jitter.DoJitter(target, ent.Comp.ConversionKnockout, true);
@@ -120,15 +120,14 @@ public sealed partial class SharedCultistSystem
 
     private bool ConversionOnCooldown(Entity<CultistComponent> ent)
     {
-        return _hive.GetHive(ent.Owner) is { } hive &&
-               TryComp<CultistDevotionComponent>(hive, out var group) && group.ConversionReadyAt > _timing.CurTime;
+        return GetGroup(ent.AsNullable()) is { } group && group.Comp.ConversionReadyAt > _timing.CurTime;
     }
 
     private void SetStunCooldown(Entity<CultistComponent> ent, TimeSpan cooldown)
     {
         _actions.SetCooldown(ent.Comp.StunActionEntity, cooldown);
-        if (_hive.GetHive(ent.Owner) is { } hive && TryComp<CultistDevotionComponent>(hive, out var group))
-            group.StunReadyAt = _timing.CurTime + cooldown;
+        if (GetGroup(ent.AsNullable()) is { } group)
+            group.Comp.StunReadyAt = _timing.CurTime + cooldown;
     }
 
     private void SaveTarget(CultistTargetDoAfterEvent ev, EntityUid target)
@@ -147,14 +146,13 @@ public sealed partial class SharedCultistSystem
 
     private bool CanRecruit(EntityUid leader, bool popup = false)
     {
-        if (_hive.GetHive(leader) is not { } hive ||
-            !TryComp<CultistDevotionComponent>(hive, out var group) ||
-            group.Revealed || !group.RevelationRequired || CanRecruitCompanion(leader, (hive, group)))
+        if (GetGroup(leader) is not { } group ||
+            group.Comp.Revealed || !group.Comp.RevelationRequired || CanRecruitCompanion(leader, group))
             return true;
 
         if (popup)
             _popup.PopupEntity(Loc.GetString("rmc-cultist-recruitment-sealed",
-                ("limit", group.ConcealedMemberLimit)), leader, leader);
+                ("limit", group.Comp.ConcealedMemberLimit)), leader, leader);
         return false;
     }
 
@@ -167,7 +165,7 @@ public sealed partial class SharedCultistSystem
         foreach (var member in group.Comp.Members)
         {
             if (member == leader || TerminatingOrDeleted(member) || !HasComp<CultistComponent>(member) ||
-                _hive.GetHive(member)?.Owner != group.Owner)
+                GetGroup(member)?.Owner != group.Owner)
                 continue;
             if (!_mobState.IsDead(member) || !_unrevivable.IsUnrevivable(member))
                 return false;

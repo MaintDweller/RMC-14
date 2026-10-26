@@ -46,7 +46,7 @@ public sealed partial class SharedCultistRitesSystem
         foreach (var member in comp.Members)
         {
             if (!TerminatingOrDeleted(member) && !_mobState.IsDead(member) &&
-                GetGroup(member)?.Owner == group.Owner &&
+                _cultist.GetGroup(member)?.Owner == group.Owner &&
                 TryComp<CultistComponent>(member, out var cultist))
                 EquipRobes((member, cultist), group);
         }
@@ -162,7 +162,7 @@ public sealed partial class SharedCultistRitesSystem
         foreach (var member in group.Comp.Members)
         {
             if (!TerminatingOrDeleted(member) && !EntityManager.IsQueuedForDeletion(member) &&
-                HasComp<CultistComponent>(member) && GetGroup(member)?.Owner == group.Owner &&
+                HasComp<CultistComponent>(member) && _cultist.GetGroup(member)?.Owner == group.Owner &&
                 !_mobState.IsDead(member))
                 count++;
         }

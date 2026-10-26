@@ -31,7 +31,8 @@ public sealed partial class CultistDevotionSystem
             return;
         }
 
-        if (!HasComp<MobStateComponent>(origin) || _rites.GetGroup(ent) is not { } group ||
+        if (!HasComp<MobStateComponent>(origin) ||
+            _cultist.GetGroupForHive(_hive.GetHive(ent.Owner)?.Owner) is not { } group ||
             !_threshold.TryGetThresholdForState(ent, MobState.Dead, out var threshold))
             return;
 
@@ -52,14 +53,14 @@ public sealed partial class CultistDevotionSystem
                            args.Damageable.TotalDamage >= threshold * group.Comp.RescueDamageFraction;
         if (rescue.Eligible && TryComp<PullableComponent>(ent, out var pullable) &&
             pullable.Puller is { } puller && HasComp<CultistComponent>(puller) &&
-            _rites.GetGroup(puller)?.Owner == group.Owner)
+            _cultist.GetGroup(puller)?.Owner == group.Owner)
             rescue.Rescuer ??= puller;
     }
 
     private void OnRescuePullStarted(Entity<CultistComponent> ent, ref PullStartedMessage args)
     {
         if (args.PullerUid != ent.Owner || !_rescues.TryGetValue(args.PulledUid, out var rescue) || !rescue.Eligible ||
-            _rites.GetGroup(ent)?.Owner != rescue.Group)
+            _cultist.GetGroup(ent.AsNullable())?.Owner != rescue.Group)
             return;
 
         rescue.Rescuer = ent;
@@ -73,13 +74,14 @@ public sealed partial class CultistDevotionSystem
         {
             if (TerminatingOrDeleted(target) || _timing.CurTime >= rescue.ExpiresAt ||
                 !HasComp<XenoComponent>(target) || HasComp<CultistComponent>(target) ||
-                _rites.GetGroup(target)?.Owner != rescue.Group)
+                !TryComp<CultistDevotionComponent>(rescue.Group, out var reserve) ||
+                !_hive.IsMember(target, reserve.Hive))
             {
                 _rescues.Remove(target);
                 continue;
             }
             if (!rescue.Eligible || rescue.Rescuer is not { } actor || TerminatingOrDeleted(actor) ||
-                _rites.GetGroup(actor) is not { } group || group.Owner != rescue.Group)
+                _cultist.GetGroup(actor) is not { } group || group.Owner != rescue.Group)
                 continue;
 
             if (TryComp<PullableComponent>(target, out var pullable) &&
@@ -126,7 +128,8 @@ public sealed partial class CultistDevotionSystem
     private void OnRescuePullStopped(Entity<CultistComponent> ent, ref PullStoppedMessage args)
     {
         if (args.PullerUid != ent.Owner || !_rescues.TryGetValue(args.PulledUid, out var rescue) ||
-            rescue.Rescuer != ent.Owner || _rites.GetGroup(ent) is not { } group || group.Owner != rescue.Group ||
+            rescue.Rescuer != ent.Owner || _cultist.GetGroup(ent.AsNullable()) is not { } group ||
+            group.Owner != rescue.Group ||
             TerminatingOrDeleted(args.PulledUid))
             return;
 

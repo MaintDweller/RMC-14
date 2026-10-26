@@ -1,6 +1,5 @@
 using System.Diagnostics.CodeAnalysis;
 using Content.Shared._RMC14.Armor;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Entrenching;
 using Content.Shared._RMC14.Map;
 using Content.Shared._RMC14.Marines.Orders;
@@ -11,6 +10,7 @@ using Content.Shared._RMC14.Xenonids.Devour;
 using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared._RMC14.Xenonids.Pheromones;
 using Content.Shared._RMC14.Projectiles;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.Armor;
 using Content.Shared.Blocking;
 using Content.Shared.Chat.Prototypes;
@@ -44,9 +44,9 @@ namespace Content.Shared._RMC14.Damage;
 public abstract class SharedRMCDamageableSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly EntityWhitelistSystem _entityWhitelist = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly MobThresholdSystem _mobThresholds = default!;
     [Dependency] private readonly INetManager _net = default!;
@@ -688,7 +688,7 @@ public abstract class SharedRMCDamageableSystem : EntitySystem
                 if (!_entityWhitelist.IsWhitelistPassOrNull(damage.Whitelist, user))
                     continue;
 
-                if (_cultist.IsXenoDamageAlly(contact, user))
+                if (_hive.FromSameHive(contact, user))
                     continue;
 
                 userDamage.NextDamageAt = time + userDamage.DamageEvery;

@@ -18,6 +18,7 @@ using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared._RMC14.Xenonids.Plasma;
 using Content.Shared._RMC14.Xenonids.Spray;
 using Content.Shared._RMC14.Xenonids.Weeds;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Coordinates;
 using Content.Shared.Damage;
@@ -57,8 +58,8 @@ public sealed class XenoLeapSystem : EntitySystem
     [Dependency] private readonly SharedAudioSystem _audio = default!;
     [Dependency] private readonly BlindableSystem _blindable = default!;
     [Dependency] private readonly SharedBroadphaseSystem _broadphase = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly MovementSpeedModifierSystem _movementSpeed = default!;
     [Dependency] private readonly INetManager _net = default!;
@@ -241,7 +242,7 @@ public sealed class XenoLeapSystem : EntitySystem
         //Handle close-range or same-tile leaps
         foreach (var ent in _physics.GetContactingEntities(xeno.Owner, physics))
         {
-            if (_cultist.IsXenoControlAlly(xeno.Owner, ent))
+            if (_hive.FromSameHive(xeno.Owner, ent))
                 continue;
 
             if (ApplyLeapingHitEffects((xeno, leaping), ent))
@@ -480,6 +481,9 @@ public sealed class XenoLeapSystem : EntitySystem
 
     private bool IsValidLeapHit(Entity<XenoLeapingComponent> xeno, EntityUid target)
     {
+        if (HasComp<XenoParasiteComponent>(xeno) && HasComp<CultistComponent>(target))
+            return false;
+
         if (xeno.Comp.KnockedDown)
             return false;
 
@@ -527,7 +531,7 @@ public sealed class XenoLeapSystem : EntitySystem
         if (!IsValidLeapHit(xeno, target))
             return false;
 
-        if (_cultist.IsXenoControlAlly(xeno.Owner, target))
+        if (_hive.FromSameHive(xeno.Owner, target))
         {
             StopLeap(xeno);
             return true;

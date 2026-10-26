@@ -16,6 +16,8 @@ namespace Content.Server._RMC14.Cultist;
 
 public sealed partial class CultistDevotionSystem : EntitySystem
 {
+    [Dependency] private readonly SharedCultistSystem _cultist = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultistRules = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly SharedCultistRitesSystem _rites = default!;
@@ -42,14 +44,15 @@ public sealed partial class CultistDevotionSystem : EntitySystem
 
     private void OnTrapPrepared(Entity<XenoResinHoleComponent> ent, ref CultistTrapPreparedEvent args)
     {
-        if (_hive.FromSameHive(args.User, ent.Owner))
+        if (_cultistRules.SupportsHive(args.User, _hive.GetHive(ent.Owner)?.Owner))
             _rites.Award(args.User, ent, CultistDevotionSource.Trap);
     }
 
     private void OnImplanted(Entity<InfectableComponent> ent, ref CultistParasiteImplantedEvent args)
     {
         if (args.User is { } user && !HasComp<CultistComponent>(ent) &&
-            !_mobState.IsDead(ent) && _hive.FromSameHive(user, args.Parasite) && HasComp<VictimInfectedComponent>(ent))
+            !_mobState.IsDead(ent) && _cultistRules.SupportsHive(user, _hive.GetHive(args.Parasite)?.Owner) &&
+            HasComp<VictimInfectedComponent>(ent))
             _rites.Award(user, ent, CultistDevotionSource.Infection);
     }
 
@@ -70,7 +73,7 @@ public sealed partial class CultistDevotionSystem : EntitySystem
         {
             if (TerminatingOrDeleted(target) || EntityManager.IsQueuedForDeletion(target) ||
                 Transform(target).MapUid == null || !IsSabotaged(target, sabotage.Source) ||
-                _rites.GetGroup(sabotage.Actor)?.Owner != sabotage.Group)
+                _cultist.GetGroup(sabotage.Actor)?.Owner != sabotage.Group)
             {
                 _sabotage.Remove(target);
                 continue;

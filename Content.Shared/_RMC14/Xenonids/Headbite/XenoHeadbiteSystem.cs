@@ -1,4 +1,3 @@
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Damage;
 using Content.Shared._RMC14.Emote;
 using Content.Shared._RMC14.Xenonids.Heal;
@@ -22,12 +21,11 @@ namespace Content.Shared._RMC14.Xenonids.Headbite;
 
 public sealed class XenoHeadbiteSystem : EntitySystem
 {
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly SharedXenoHealSystem _xenoHeal = default!;
     [Dependency] private readonly DamageableSystem _damage = default!;
     [Dependency] private readonly SharedRMCDamageableSystem _rmcDamageable = default!;
@@ -112,9 +110,6 @@ public sealed class XenoHeadbiteSystem : EntitySystem
 
     private bool CanHeadbite(EntityUid xeno, EntityUid target)
     {
-        if (_cultist.IsProtectedFrom(xeno, target))
-            return false;
-
         if (!_mobState.IsCritical(target) && !_status.HasStatusEffect(target, Unconsciousness))
         {
             var failMsg = Loc.GetString("rmc-xeno-headbite-warning");

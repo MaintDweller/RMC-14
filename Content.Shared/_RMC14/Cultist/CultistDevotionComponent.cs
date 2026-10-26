@@ -12,6 +12,9 @@ namespace Content.Shared._RMC14.Cultist;
 public sealed partial class CultistDevotionComponent : Component
 {
     [AutoNetworkedField]
+    public EntityUid? Hive;
+
+    [AutoNetworkedField]
     public int Devotion;
 
     [DataField]

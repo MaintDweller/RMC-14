@@ -126,11 +126,6 @@ public sealed class RadioSystem : EntitySystem
         {
             // RMC14
             var currentLanguage = language ?? _language.GetCurrentLanguage(messageSource);
-            var messageAttempt = new RMCRadioMessageAttemptEvent(channel.ID);
-            RaiseLocalEvent(messageSource, ref messageAttempt);
-            if (messageAttempt.Cancelled)
-                return;
-
             _prototype.TryIndex(currentLanguage, out LanguagePrototype? languagePrototype);
 
             if (languagePrototype != null && !languagePrototype.CanUseRadio)
@@ -322,8 +317,7 @@ public sealed class RadioSystem : EntitySystem
     }
     // RMC14
 
-    // RMC14
-    public EntityUid? ResolveRadioListener(EntityUid receiver)
+    private EntityUid? ResolveRadioListener(EntityUid receiver)
     {
         if (HasComp<IntrinsicRadioReceiverComponent>(receiver))
             return receiver;
@@ -338,7 +332,6 @@ public sealed class RadioSystem : EntitySystem
 
         return null;
     }
-    // RMC14
 
     /// <inheritdoc cref="TelecomServerComponent"/>
     private bool HasActiveServer(MapId mapId, string channelId)

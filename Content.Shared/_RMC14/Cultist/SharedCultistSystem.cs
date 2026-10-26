@@ -36,7 +36,6 @@ public sealed partial class SharedCultistSystem : EntitySystem
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
     [Dependency] private readonly IPrototypeManager _prototypes = default!;
-    [Dependency] private readonly CultistInteractionSystem _rules = default!;
     [Dependency] private readonly RMCSizeStunSystem _sizeStun = default!;
     [Dependency] private readonly SkillsSystem _skills = default!;
     [Dependency] private readonly RMCSlowSystem _slow = default!;
@@ -58,8 +57,7 @@ public sealed partial class SharedCultistSystem : EntitySystem
         SubscribeLocalEvent<CultistComponent, CultistStunActionEvent>(OnStunAction);
         SubscribeLocalEvent<CultistComponent, CultistStunDoAfterEvent>(OnStunDoAfter);
         SubscribeLocalEvent<CultistComponent, DoAfterAttemptEvent<CultistStunDoAfterEvent>>(OnStunAttempt);
-        InitializeCombat();
-        InitializeEnvironment();
+        InitializeGroups();
         InitializeLanguage();
     }
 
@@ -68,9 +66,7 @@ public sealed partial class SharedCultistSystem : EntitySystem
         if (_net.IsClient)
             return;
 
-        _actions.AddAction(ent, ref ent.Comp.FriendlyFireActionEntity, ent.Comp.FriendlyFireAction);
         _actions.AddAction(ent, ref ent.Comp.RitesActionEntity, ent.Comp.RitesAction);
-        _actions.SetToggled(ent.Comp.FriendlyFireActionEntity, ent.Comp.AllowFriendlyFire);
         if (ent.Comp.Leader)
             AddLeaderActions(ent);
 
@@ -87,7 +83,6 @@ public sealed partial class SharedCultistSystem : EntitySystem
         RaiseLocalEvent(ent, ref leaving);
         _actions.RemoveAction(ent.Comp.ConvertActionEntity);
         _actions.RemoveAction(ent.Comp.StunActionEntity);
-        _actions.RemoveAction(ent.Comp.FriendlyFireActionEntity);
         _actions.RemoveAction(ent.Comp.RitesActionEntity);
         if (ent.Comp.ParasiteRitual is { } parasiteRitual)
             _doAfter.Cancel(parasiteRitual);
@@ -96,12 +91,22 @@ public sealed partial class SharedCultistSystem : EntitySystem
 
     public void MakeCultist(EntityUid uid, EntityUid hive, bool leader = false)
     {
-        _hive.SetHive(uid, hive);
-        EnsureComp<XenoFriendlyComponent>(uid);
+        var group = GetOrCreateGroup(hive);
+        RemComp<HiveMemberComponent>(uid);
+        RemComp<XenoFriendlyComponent>(uid);
         if (!HasComp<CultistComponent>(uid))
             EntityManager.AddComponents(uid, _prototypes.Index(leader ? LeaderEffects : CultistEffects));
 
         var cultist = Comp<CultistComponent>(uid);
+        if (cultist.Group != null && cultist.Group != group.Owner)
+        {
+            var leaving = new CultistLeftEvent();
+            RaiseLocalEvent(uid, ref leaving);
+        }
+        cultist.Group = group;
+        cultist.Leader |= leader;
+        if (cultist.Leader)
+            AddLeaderActions((uid, cultist));
         Dirty(uid, cultist);
         var language = new CultistLanguageSetupEvent();
         RaiseLocalEvent(uid, ref language);
@@ -131,9 +136,10 @@ public sealed partial class SharedCultistSystem : EntitySystem
     {
         _actions.AddAction(ent, ref ent.Comp.ConvertActionEntity, ent.Comp.ConvertAction);
         _actions.AddAction(ent, ref ent.Comp.StunActionEntity, ent.Comp.StunAction);
-        if (_hive.GetHive(ent.Owner) is not { } hive || !TryComp<CultistDevotionComponent>(hive, out var devotion))
+        if (GetGroup(ent.AsNullable()) is not { } group)
             return;
 
+        var devotion = group.Comp;
         if (devotion.ConversionReadyAt > _timing.CurTime)
             _actions.SetCooldown(ent.Comp.ConvertActionEntity, devotion.ConversionReadyAt - _timing.CurTime);
         if (devotion.StunReadyAt > _timing.CurTime)
@@ -157,7 +163,7 @@ public sealed partial class SharedCultistSystem : EntitySystem
             !TryComp<HumanoidAppearanceComponent>(target, out var appearance) || appearance.Species != HumanSpecies)
             return false;
 
-        if (_hive.GetHive(cultist.Owner) is not { } hive ||
+        if (GetSupportedHive(cultist.AsNullable()) is not { } hive ||
             hive.Comp.CurrentQueen is not { } queen || !_mobState.IsAlive(queen))
         {
             if (popup)
@@ -165,7 +171,7 @@ public sealed partial class SharedCultistSystem : EntitySystem
             return false;
         }
 
-        if (_hive.FromSameHive(cultist.Owner, target) ||
+        if (GetGroup(target)?.Owner == cultist.Comp.Group || _hive.IsMember(target, hive.Owner) ||
             !_interaction.InRangeUnobstructed(cultist.Owner, target, cultist.Comp.AbilityRange))
             return false;
 

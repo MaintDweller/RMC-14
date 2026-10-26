@@ -1,9 +1,9 @@
 using System.Numerics;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Damage.ObstacleSlamming;
 using Content.Shared._RMC14.Map;
 using Content.Shared._RMC14.Pulling;
 using Content.Shared._RMC14.Stun;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.Damage;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Popups;
@@ -20,8 +20,8 @@ namespace Content.Shared._RMC14.Xenonids.Tumble;
 public sealed class XenoTumbleSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
@@ -111,7 +111,7 @@ public sealed class XenoTumbleSystem : EntitySystem
         if (_timing.IsFirstTimePredicted && xeno.Comp.Target != null)
             xeno.Comp.Target = null;
 
-        if (_cultist.IsXenoControlAlly(xeno.Owner, args.Target))
+        if (_hive.FromSameHive(xeno.Owner, args.Target))
             return;
 
         if (_net.IsServer)

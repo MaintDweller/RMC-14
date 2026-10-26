@@ -2,7 +2,6 @@ using System.Numerics;
 using Content.Shared._RMC14.Areas;
 using Content.Shared._RMC14.BlurredVision;
 using Content.Shared._RMC14.Chat;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Deafness;
 using Content.Shared._RMC14.Marines;
 using Content.Shared._RMC14.Pulling;
@@ -11,7 +10,6 @@ using Content.Shared._RMC14.Stamina;
 using Content.Shared._RMC14.Stun;
 using Content.Shared._RMC14.Synth;
 using Content.Shared._RMC14.Xenonids.Construction.Nest;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Parasite;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Chat;
@@ -43,11 +41,9 @@ namespace Content.Shared._RMC14.Xenonids.Neurotoxin;
 
 public abstract class SharedNeurotoxinSystem : EntitySystem
 {
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly EntityLookupSystem _entityLookup = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly RMCStaminaSystem _stamina = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
@@ -115,7 +111,6 @@ public abstract class SharedNeurotoxinSystem : EntitySystem
         neuro.ToxinDamage = ent.Comp.ToxinDamage;
         neuro.OxygenDamage = ent.Comp.OxygenDamage;
         neuro.CoughDamage = ent.Comp.CoughDamage;
-        neuro.SourceHive = _hive.GetHive(ent.Owner)?.Owner;
         Dirty(args.Target, neuro);
     }
 
@@ -173,12 +168,6 @@ public abstract class SharedNeurotoxinSystem : EntitySystem
                 builtNeurotoxin.OxygenDamage = neuroGas.OxygenDamage;
                 builtNeurotoxin.CoughDamage = neuroGas.CoughDamage;
                 builtNeurotoxin.NextGasInjectionAt = time + neuroGas.TimeBetweenGasInjects;
-                var sourceHive = _hive.GetHive(uid)?.Owner;
-                if (builtNeurotoxin.SourceHive != sourceHive)
-                {
-                    builtNeurotoxin.SourceHive = sourceHive;
-                    Dirty(marine.Owner, builtNeurotoxin);
-                }
             }
         }
 
@@ -232,8 +221,7 @@ public abstract class SharedNeurotoxinSystem : EntitySystem
             if (_random.Prob(coughChance))
             {
                 _slow.TrySlowdown(uid, neuro.BloodCoughDuration);
-                if (CanDamage(uid, neuro))
-                    _damage.TryChangeDamage(uid, neuro.CoughDamage); // TODO RMC14 specifically chest damage
+                _damage.TryChangeDamage(uid, neuro.CoughDamage); // TODO RMC14 specifically chest damage
                 _popup.PopupEntity(Loc.GetString("rmc-bloodcough"), uid, uid, PopupType.MediumCaution);
                 var ev = new NeurotoxinEmoteEvent() { Emote = neuro.CoughId };
                 RaiseLocalEvent(uid, ev);
@@ -377,22 +365,15 @@ public abstract class SharedNeurotoxinSystem : EntitySystem
         if (neurotoxin.NeurotoxinAmount >= 27)
         {
             _daze.TryDaze(victim, neurotoxin.DazeLength, true, stutter: true);
-            if (CanDamage(victim, neurotoxin))
-                _damage.TryChangeDamage(victim, neurotoxin.ToxinDamage);
+            _damage.TryChangeDamage(victim, neurotoxin.ToxinDamage);
             _deafness.TryDeafen(victim, neurotoxin.DeafenTime, true, ignoreProtection: true);
         }
 
         if (neurotoxin.NeurotoxinAmount >= 50)
         {
             // TODO RMC14 also gives liver damage
-            if (CanDamage(victim, neurotoxin))
-                _damage.TryChangeDamage(victim, neurotoxin.OxygenDamage);
+            _damage.TryChangeDamage(victim, neurotoxin.OxygenDamage);
         }
-    }
-
-    private bool CanDamage(EntityUid victim, NeurotoxinComponent neurotoxin)
-    {
-        return !_cultist.IsProtectedFromHive(victim, neurotoxin.SourceHive);
     }
 
     private void DoNeuroHallucination(EntityUid victim, NeurotoxinComponent neurotoxin)

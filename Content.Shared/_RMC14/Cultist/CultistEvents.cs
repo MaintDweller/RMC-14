@@ -9,8 +9,6 @@ namespace Content.Shared._RMC14.Cultist;
 [ByRefEvent]
 public readonly record struct CultistLanguageSetupEvent;
 
-public sealed partial class CultistFriendlyFireActionEvent : InstantActionEvent;
-
 public sealed partial class CultistConvertActionEvent : EntityTargetActionEvent;
 
 public sealed partial class CultistStunActionEvent : EntityTargetActionEvent;

@@ -1,5 +1,6 @@
 using System.Numerics;
 using Content.Shared._RMC14.Actions;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Emote;
 using Content.Shared._RMC14.Line;
 using Content.Shared._RMC14.Pulling;
@@ -23,6 +24,7 @@ namespace Content.Shared._RMC14.Xenonids.Retrieve;
 public sealed class XenoRetrieveSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
+    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly SharedInteractionSystem _interaction = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
@@ -48,7 +50,8 @@ public sealed class XenoRetrieveSystem : EntitySystem
     private void OnXenoRetrieveAction(Entity<XenoRetrieveComponent> xeno, ref XenoRetrieveActionEvent args)
     {
         var target = args.Target;
-        if (!_hive.FromSameHive(xeno.Owner, target))
+        if (!_hive.FromSameHive(xeno.Owner, target) &&
+            !_cultist.SupportsHive(target, _hive.GetHive(xeno.Owner)?.Owner))
         {
             var msg = Loc.GetString("rmc-xeno-not-same-hive");
             _popup.PopupClient(msg, xeno, xeno, PopupType.SmallCaution);

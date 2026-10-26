@@ -1,4 +1,5 @@
 using Content.Shared._RMC14.Actions;
+using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Dropship;
 using Content.Shared._RMC14.Hands;
 using Content.Shared._RMC14.Marines;
@@ -60,8 +61,8 @@ public sealed class XenoEggSystem : EntitySystem
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly FixtureSystem _fixture = default!;
     [Dependency] private readonly SharedHandsSystem _hands = default!;
-    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
+    [Dependency] private readonly SharedInteractionSystem _interaction = default!;
     [Dependency] private readonly SharedXenoParasiteSystem _parasite = default!;
     [Dependency] private readonly SharedMapSystem _map = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
@@ -475,7 +476,8 @@ public sealed class XenoEggSystem : EntitySystem
 
     private bool CanTrigger(EntityUid user)
     {
-        return TryComp<InfectableComponent>(user, out var infected)
+        return !HasComp<CultistComponent>(user)
+               && TryComp<InfectableComponent>(user, out var infected)
                && !infected.BeingInfected
                && !_mobState.IsDead(user)
                && !HasComp<VictimInfectedComponent>(user);

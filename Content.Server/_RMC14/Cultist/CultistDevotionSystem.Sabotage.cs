@@ -59,7 +59,7 @@ public sealed partial class CultistDevotionSystem
     private void StartSabotage(EntityUid target, EntityUid? actor, CultistDevotionSource source)
     {
         if (actor is not { } cultist || !HasComp<CultistComponent>(cultist) ||
-            _rites.GetGroup(cultist) is not { } group || Transform(target).MapUid == null)
+            _cultist.GetGroup(cultist) is not { } group || Transform(target).MapUid == null)
             return;
 
         _sabotage[target] = new Sabotage(cultist, group, _timing.CurTime + group.Comp.SabotageDelay, source);

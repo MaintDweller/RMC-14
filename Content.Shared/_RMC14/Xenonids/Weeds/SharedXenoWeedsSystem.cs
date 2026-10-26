@@ -4,7 +4,6 @@ using Content.Shared._RMC14.Armor;
 using Content.Shared._RMC14.Barricade;
 using Content.Shared._RMC14.CCVar;
 using Content.Shared._RMC14.Communications;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Entrenching;
 using Content.Shared._RMC14.Map;
 using Content.Shared._RMC14.Power;
@@ -53,7 +52,6 @@ public abstract class SharedXenoWeedsSystem : EntitySystem
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly IConfigurationManager _config = default!;
     [Dependency] private readonly SharedContainerSystem _container = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly SharedDirectionalAttackBlockSystem _directionBlocker = default!;
     [Dependency] private readonly EntityWhitelistSystem _entityWhitelist = default!;
@@ -280,11 +278,8 @@ public abstract class SharedXenoWeedsSystem : EntitySystem
 
         var speedWeeds = 0.0f;
         var speedResin = 0.0f;
-        var canReceiveSpeedBoost = _cultist.CanReceiveResinSpeedBoost(ent.Owner);
-        var isXeno = canReceiveSpeedBoost && _xenoQuery.HasComp(ent);
+        var isXeno = _xenoQuery.HasComp(ent);
         _hiveMemberQuery.TryComp(ent, out var hive);
-        if (_cultist.CanHarmHive(ent.Owner))
-            hive = null;
 
         var anyWeeds = false;
         var anySlowResin = false;
@@ -377,9 +372,6 @@ public abstract class SharedXenoWeedsSystem : EntitySystem
             finalSpeed = speedResin;
         else if (entriesWeeds > 0)
             finalSpeed = speedWeeds;
-
-        if (!canReceiveSpeedBoost)
-            finalSpeed = Math.Min(finalSpeed, 1.0f);
 
         args.ModifySpeed(finalSpeed, finalSpeed);
 

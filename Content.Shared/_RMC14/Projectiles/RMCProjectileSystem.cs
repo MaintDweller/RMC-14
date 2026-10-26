@@ -22,6 +22,7 @@ namespace Content.Shared._RMC14.Projectiles;
 public sealed class RMCProjectileSystem : EntitySystem
 {
     [Dependency] private readonly ExamineSystemShared _examine = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly NpcFactionSystem _npcFaction = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
@@ -31,7 +32,6 @@ public sealed class RMCProjectileSystem : EntitySystem
     [Dependency] private readonly RMCMapSystem _rmcMap = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
     [Dependency] private readonly EntityWhitelistSystem _whitelist = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
 
     public override void Initialize()
     {
@@ -64,11 +64,7 @@ public sealed class RMCProjectileSystem : EntitySystem
         if (!_whitelist.IsWhitelistPassOrNull(ent.Comp.Whitelist, args.Target))
             return;
         if (ent.Comp.Add is { } add)
-        {
             EntityManager.AddComponents(args.Target, add);
-            var ev = new RMCProjectileTargetModifiedEvent(ent, add);
-            RaiseLocalEvent(args.Target, ref ev);
-        }
     }
 
     private void OnProjectileMaxRangeMapInit(Entity<ProjectileMaxRangeComponent> ent, ref MapInitEvent args)

@@ -22,6 +22,7 @@ namespace Content.Shared._RMC14.Xenonids.AcidMine;
 public sealed class XenoAcidBlastSystem : EntitySystem
 {
     [Dependency] private readonly DamageableSystem _damage = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly EntityLookupSystem _lookup = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly INetManager _net = default!;
@@ -31,7 +32,6 @@ public sealed class XenoAcidBlastSystem : EntitySystem
     [Dependency] private readonly SharedColorFlashEffectSystem _colorFlash = default!;
     [Dependency] private readonly SharedRMCActionsSystem _rmcActions = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly XenoSystem _xeno = default!;
 
     private readonly HashSet<EntityUid> _targets = new();
@@ -186,14 +186,12 @@ public sealed class XenoAcidBlastSystem : EntitySystem
     {
         if (TryComp(target, out UserAcidedComponent? existing))
         {
-            existing.SourceHive = _hive.GetHive(ent.Comp.Attached ?? ent.Owner)?.Owner;
             existing.ExpiresAt += ent.Comp.AcidProlongDuration;
             Dirty(target, existing);
         }
         else
         {
             var acided = EnsureComp<UserAcidedComponent>(target);
-            acided.SourceHive = _hive.GetHive(ent.Comp.Attached ?? ent.Owner)?.Owner;
             acided.Duration = ent.Comp.AcidDuration;
             acided.Damage = ent.Comp.AcidDamage;
             acided.ArmorPiercing = ent.Comp.AcidArmorPiercing;

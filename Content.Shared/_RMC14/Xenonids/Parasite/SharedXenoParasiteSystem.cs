@@ -67,6 +67,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     [Dependency] private readonly SharedContainerSystem _container = default!;
     [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly RMCHandsSystem _rmcHands = default!;
     [Dependency] private readonly SharedRMCSpriteSystem _rmcSprite = default!;
     [Dependency] private readonly InventorySystem _inventory = default!;
@@ -77,7 +78,6 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     [Dependency] private readonly StandingStateSystem _standing = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
     [Dependency] private readonly SharedTransformSystem _transform = default!;
-    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly IRobustRandom _random = default!;
     [Dependency] private readonly SharedJitteringSystem _jitter = default!;
     [Dependency] private readonly DamageableSystem _damage = default!;
@@ -197,7 +197,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
             return;
         }
 
-        if (!CanInfectPopup(ent, target, ent))
+        if (!CanInfectPopup(ent, target, args.DoAfter.Args.User))
             args.Cancel();
     }
 
@@ -544,7 +544,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
 
     private bool CanInfectPopup(Entity<XenoParasiteComponent> parasite, EntityUid victim, EntityUid user, bool popup = true, bool force = false)
     {
-        if (!IsInfectable(parasite, victim))
+        if (!IsInfectable(parasite, victim) || user == parasite.Owner && HasComp<CultistComponent>(victim))
         {
             if (popup)
                 _popup.PopupClient(Loc.GetString("rmc-xeno-failed-cant-infect", ("target", victim)), victim, user, PopupType.MediumCaution);
@@ -584,7 +584,7 @@ public abstract partial class SharedXenoParasiteSystem : EntitySystem
     public bool Infect(Entity<XenoParasiteComponent> parasite, EntityUid victim, bool popup = true, bool force = false,
         EntityUid? user = null)
     {
-        if (!CanInfectPopup(parasite, victim, parasite, popup, force))
+        if (!CanInfectPopup(parasite, victim, user ?? parasite.Owner, popup, force))
             return false;
 
         if (!TryComp(victim, out InfectableComponent? infectable))

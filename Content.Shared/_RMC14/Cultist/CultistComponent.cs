@@ -1,4 +1,5 @@
 using Content.Shared._RMC14.Marines.Skills;
+using Content.Shared.Access;
 using Content.Shared.DoAfter;
 using Robust.Shared.Audio;
 using Robust.Shared.GameStates;
@@ -10,11 +11,14 @@ namespace Content.Shared._RMC14.Cultist;
 [Access(typeof(SharedCultistSystem), typeof(SharedCultistRitesSystem))]
 public sealed partial class CultistComponent : Component
 {
-    [DataField, AutoNetworkedField]
-    public bool Leader;
+    [AutoNetworkedField]
+    public EntityUid? Group;
 
     [DataField, AutoNetworkedField]
-    public bool AllowFriendlyFire;
+    public ProtoId<AccessLevelPrototype> DoorAccess = "CMAccessXeno";
+
+    [DataField, AutoNetworkedField]
+    public bool Leader;
 
     public bool Channeling;
 
@@ -32,9 +36,6 @@ public sealed partial class CultistComponent : Component
     public EntProtoId StunAction = "RMCActionCultistStun";
 
     [DataField, AutoNetworkedField]
-    public EntProtoId FriendlyFireAction = "RMCActionCultistFriendlyFire";
-
-    [DataField, AutoNetworkedField]
     public EntProtoId RitesAction = "RMCActionCultistRites";
 
     [AutoNetworkedField]
@@ -45,9 +46,6 @@ public sealed partial class CultistComponent : Component
 
     [AutoNetworkedField]
     public EntityUid? StunActionEntity;
-
-    [AutoNetworkedField]
-    public EntityUid? FriendlyFireActionEntity;
 
     [DataField]
     public TimeSpan ConversionDelay = TimeSpan.FromSeconds(10);

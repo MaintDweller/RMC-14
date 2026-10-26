@@ -2,15 +2,12 @@ using Content.Shared._RMC14.Actions;
 using Content.Shared._RMC14.Armor;
 using Content.Shared._RMC14.Atmos;
 using Content.Shared._RMC14.Chemistry;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Explosion;
 using Content.Shared._RMC14.OnCollide;
-using Content.Shared._RMC14.Projectiles;
 using Content.Shared._RMC14.Shields;
 using Content.Shared._RMC14.Slow;
 using Content.Shared._RMC14.Synth;
 using Content.Shared._RMC14.Xenonids.Construction.DeployedTraps;
-using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared._RMC14.Xenonids.Insight;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit.Ball;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit.Charge;
@@ -20,6 +17,7 @@ using Content.Shared._RMC14.Xenonids.Projectile.Spit.Shotgun;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit.Slowing;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit.Stacks;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit.Standard;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.ActionBlocker;
 using Content.Shared.Actions;
 using Content.Shared.Alert;
@@ -52,7 +50,6 @@ public sealed class XenoSpitSystem : EntitySystem
     [Dependency] private readonly AlertsSystem _alerts = default!;
     [Dependency] private readonly SharedAppearanceSystem _appearance = default!;
     [Dependency] private readonly SharedColorFlashEffectSystem _colorFlash = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
     [Dependency] private readonly SharedDoAfterSystem _doAfter = default!;
     [Dependency] private readonly EntityWhitelistSystem _entityWhitelist = default!;
@@ -109,8 +106,6 @@ public sealed class XenoSpitSystem : EntitySystem
 
         SubscribeLocalEvent<XenoProjectileShieldOnHitComponent, ProjectileHitEvent>(OnShieldOnHit, after: [typeof(CMClusterGrenadeSystem)]);
         SubscribeLocalEvent<XenoProjectileShieldOnHitComponent, CMClusterSpawnedEvent>(OnShieldOnHitClusterSpawned);
-
-        SubscribeLocalEvent<UserAcidedComponent, RMCProjectileTargetModifiedEvent>(OnAcidSourceHit);
 
         SubscribeLocalEvent<UserAcidedComponent, MapInitEvent>(OnUserAcidedMapInit);
         SubscribeLocalEvent<UserAcidedComponent, ComponentRemove>(OnUserAcidedRemove);
@@ -293,7 +288,7 @@ public sealed class XenoSpitSystem : EntitySystem
     private void OnXenoSlowingSpitHit(Entity<XenoSlowingSpitProjectileComponent> spit, ref ProjectileHitEvent args)
     {
         var target = args.Target;
-        if (_cultist.IsXenoControlAlly(spit.Owner, target) ||
+        if (_hive.FromSameHive(spit.Owner, target) ||
             HasComp<XenoComponent>(target))
         {
             PredictedQueueDel(spit.Owner);
@@ -425,19 +420,6 @@ public sealed class XenoSpitSystem : EntitySystem
                 projectile.Shooter = shooter;
                 Dirty(spawned, projectile);
             }
-        }
-    }
-
-    private void OnAcidSourceHit(Entity<UserAcidedComponent> ent, ref RMCProjectileTargetModifiedEvent args)
-    {
-        foreach (var entry in args.Components.Values)
-        {
-            if (entry.Component is not UserAcidedComponent)
-                continue;
-
-            ent.Comp.SourceHive = _hive.GetHive(args.Projectile)?.Owner;
-            Dirty(ent);
-            return;
         }
     }
 
@@ -585,7 +567,7 @@ public sealed class XenoSpitSystem : EntitySystem
             return;
 
         var target = args.Target;
-        if (_cultist.IsXenoControlAlly(spit.Owner, target) ||
+        if (_hive.FromSameHive(spit.Owner, target) ||
             !_solution.TryGetSolution(target, spit.Comp.TargetSolution, out var solEnt, out var solu))
             return;
 
@@ -633,9 +615,6 @@ public sealed class XenoSpitSystem : EntitySystem
                 continue;
 
             acided.NextDamageAt = time + acided.DamageEvery;
-            if (_cultist.IsProtectedFromHive(uid, acided.SourceHive))
-                continue;
-
             _damageable.TryChangeDamage(uid, acided.Damage, armorPiercing: acided.ArmorPiercing);
         }
 

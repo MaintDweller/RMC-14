@@ -48,11 +48,12 @@ public sealed partial class SharedCultistRitesSystem
         return true;
     }
 
-    private bool ValidParasiteRite(Entity<CultistComponent> ent, NetEntity hive,
+    private bool ValidParasiteRite(Entity<CultistComponent> ent, NetEntity groupId,
         out Entity<CultistDevotionComponent> group)
     {
         group = default;
-        if (GetGroup(ent) is not { } current || GetNetEntity(current) != hive || !Ready(ent, current) ||
+        if (_cultist.GetGroup(ent.AsNullable()) is not { } current || GetNetEntity(current) != groupId ||
+            !Ready(ent, current) ||
             current.Comp.Devotion < current.Comp.ParasiteCost)
             return false;
 
@@ -98,7 +99,7 @@ public sealed partial class SharedCultistRitesSystem
             return;
         }
 
-        _hive.SetHive(parasite, group.Owner);
+        _hive.SetHive(parasite, group.Comp.Hive);
         EndRiteVisuals(ent.Comp.ParasiteEffects, completed: true);
         _parasites.SetInfector((parasite, parasiteComp), ent);
         group.Comp.Devotion -= group.Comp.ParasiteCost;

@@ -227,7 +227,7 @@ public sealed partial class XenoSystem : EntitySystem
             return;
 
         // TODO RMC14 this still falsely plays the hit red flash effect on xenos if others are hit in a wide swing
-        if ((_xenoFriendlyQuery.HasComp(target) && _cultist.IsXenoControlAlly(xeno.Owner, target)) ||
+        if ((_xenoFriendlyQuery.HasComp(target) && _hive.FromSameHive(xeno.Owner, target)) ||
             _mobState.IsDead(target))
         {
             if (!args.Disarm)
@@ -507,7 +507,7 @@ public sealed partial class XenoSystem : EntitySystem
             return false;
 
         // hiveless xenos can attack eachother
-        if (_cultist.IsXenoControlAlly(xeno, target))
+        if (_hive.FromSameHive(xeno, target))
             return false;
 
         if (_mobState.IsDead(target))

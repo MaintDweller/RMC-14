@@ -1,14 +1,14 @@
 ﻿using Content.Server.Destructible;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Xenonids.Construction.DeployedTraps;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.Damage;
 
 namespace Content.Server._RMC14.Xenonids.Construction.DeployedTraps;
 
 public sealed class XenoDeployedTrapsSystem : EntitySystem
 {
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DestructibleSystem _destructible = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
 
     public override void Initialize()
     {
@@ -17,7 +17,7 @@ public sealed class XenoDeployedTrapsSystem : EntitySystem
 
     private void OnTrapDamaged(Entity<XenoDeployedTrapsComponent> trap, ref DamageChangedEvent args)
     {
-        if (args.Origin is { } origin && _cultist.IsHiveStructureProtected(origin, trap.Owner))
+        if (args.Origin is { } origin && _hive.FromSameHive(trap.Owner, origin))
             return;
 
         if (args.DamageDelta == null)

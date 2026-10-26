@@ -1,10 +1,10 @@
 using Content.Shared._RMC14.Armor.ThermalCloak;
 using Content.Shared._RMC14.Atmos;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Stun;
 using Content.Shared._RMC14.Xenonids;
 using Content.Shared._RMC14.Xenonids.Projectile;
 using Content.Shared._RMC14.Xenonids.Projectile.Spit;
+using Content.Shared._RMC14.Xenonids.Hive;
 using Content.Shared.Damage;
 using Content.Shared.Mobs.Systems;
 using Content.Shared.Standing;
@@ -18,8 +18,8 @@ namespace Content.Shared._RMC14.OnCollide;
 
 public abstract class SharedOnCollideSystem : EntitySystem
 {
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly DamageableSystem _damageable = default!;
+    [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
     [Dependency] private readonly MobStateSystem _mobState = default!;
     [Dependency] private readonly SharedPhysicsSystem _physics = default!;
     [Dependency] private readonly SharedStunSystem _stun = default!;
@@ -81,7 +81,7 @@ public abstract class SharedOnCollideSystem : EntitySystem
         if (!ent.Comp.DamageDead && _mobState.IsDead(other))
             return;
 
-        if (_cultist.IsXenoControlAlly(ent.Owner, other))
+        if (_hive.FromSameHive(ent.Owner, other))
             return;
 
         if (ent.Comp.Fire && HasComp<RMCImmuneToFireTileDamageComponent>(other))

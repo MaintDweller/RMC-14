@@ -1,5 +1,4 @@
 using System.Numerics;
-using Content.Shared._RMC14.Cultist;
 using Content.Shared._RMC14.Explosion;
 using Content.Shared._RMC14.Light;
 using Content.Shared._RMC14.Movement;
@@ -36,7 +35,6 @@ namespace Content.Shared._RMC14.Xenonids.Projectile;
 public sealed class XenoProjectileSystem : EntitySystem
 {
     [Dependency] private readonly SharedAudioSystem _audio = default!;
-    [Dependency] private readonly CultistInteractionSystem _cultist = default!;
     [Dependency] private readonly SharedGunSystem _gun = default!;
     [Dependency] private readonly SharedGunPredictionSystem _gunPrediction = default!;
     [Dependency] private readonly SharedXenoHiveSystem _hive = default!;
@@ -363,7 +361,7 @@ public sealed class XenoProjectileSystem : EntitySystem
 
     private void OnProjectileHit(Entity<XenoProjectileComponent> ent, ref ProjectileHitEvent args)
     {
-        if (_cultist.IsXenoControlAlly(ent.Owner, args.Target))
+        if (_hive.FromSameHive(ent.Owner, args.Target))
         {
             args.Handled = true;
 

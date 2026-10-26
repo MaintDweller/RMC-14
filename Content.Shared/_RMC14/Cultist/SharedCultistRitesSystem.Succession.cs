@@ -11,7 +11,7 @@ public sealed partial class SharedCultistRitesSystem
     public bool Nominate(Entity<CultistComponent> candidate)
     {
         if (_net.IsClient || candidate.Comp.Leader || candidate.Comp.Channeling ||
-            HasComp<SynthComponent>(candidate) || GetGroup(candidate) is not { } group ||
+            HasComp<SynthComponent>(candidate) || _cultist.GetGroup(candidate.AsNullable()) is not { } group ||
             group.Comp.Ritual != null || group.Comp.Revelation != null || !Ready(candidate, group))
             return false;
 
@@ -31,7 +31,7 @@ public sealed partial class SharedCultistRitesSystem
 
     public bool Support(Entity<CultistComponent> supporter)
     {
-        if (_net.IsClient || supporter.Comp.Channeling || GetGroup(supporter) is not { } group ||
+        if (_net.IsClient || supporter.Comp.Channeling || _cultist.GetGroup(supporter.AsNullable()) is not { } group ||
             group.Comp.Ritual is not { Started: false } ritual || ritual.ExpiresAt <= _timing.CurTime ||
             ritual.Candidate == supporter.Owner || !Ready(supporter, group) || !Ready(ritual.Candidate, group) ||
             !_interaction.InRangeUnobstructed(supporter.Owner, ritual.Candidate, group.Comp.RitualRange))

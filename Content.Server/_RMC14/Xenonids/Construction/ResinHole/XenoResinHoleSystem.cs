@@ -321,7 +321,7 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
 
     private void OnXenoResinHoleTakeDamage(Entity<XenoResinHoleComponent> resinHole, ref DamageChangedEvent args)
     {
-        if (args.Origin is { } origin && _cultist.IsHiveStructureProtected(origin, resinHole.Owner))
+        if (args.Origin is { } origin && _hive.FromSameHive(resinHole.Owner, origin))
             return;
 
         //TODO Flames should make the trigger message never happen but destroyed will
@@ -352,7 +352,7 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
         if (resinHole.Comp.TrapPrototype is null)
             return;
 
-        if (_hive.FromSameHive(args.Tripper, resinHole.Owner))
+        if (_hive.FromSameHive(resinHole.Owner, args.Tripper))
         {
             args.Continue = false;
             return;
@@ -366,7 +366,8 @@ public sealed class XenoResinHoleSystem : SharedXenoResinHoleSystem
                 return;
             }
 
-            args.Continue = TryComp<InfectableComponent>(args.Tripper, out var infected)
+            args.Continue = !HasComp<CultistComponent>(args.Tripper)
+                && TryComp<InfectableComponent>(args.Tripper, out var infected)
                 && !infected.BeingInfected
                 && !HasComp<VictimInfectedComponent>(args.Tripper);
             return;

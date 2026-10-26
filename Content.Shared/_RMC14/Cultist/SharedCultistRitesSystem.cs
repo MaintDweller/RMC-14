@@ -22,7 +22,6 @@ using Robust.Shared.Audio.Systems;
 using Robust.Shared.Containers;
 using Robust.Shared.Network;
 using Robust.Shared.Player;
-using Robust.Shared.Prototypes;
 using Robust.Shared.Timing;
 
 namespace Content.Shared._RMC14.Cultist;
@@ -47,13 +46,11 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
     [Dependency] private readonly INetManager _net = default!;
     [Dependency] private readonly SharedXenoParasiteSystem _parasites = default!;
     [Dependency] private readonly SharedPopupSystem _popup = default!;
-    [Dependency] private readonly IPrototypeManager _prototypes = default!;
     [Dependency] private readonly RMCGibSystem _rmcGib = default!;
     [Dependency] private readonly StandingStateSystem _standing = default!;
     [Dependency] private readonly IGameTiming _timing = default!;
 
     private TimeSpan _nextUpdate;
-    private static readonly EntProtoId DevotionSettings = "RMCCultistDevotion";
 
     public override void Initialize()
     {
@@ -72,22 +69,20 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
 
     private void OnJoined(Entity<CultistComponent> ent, ref CultistJoinedEvent args)
     {
-        if (_net.IsClient || _hive.GetHive(ent.Owner) is not { } hive)
+        if (_net.IsClient || _cultist.GetGroup(ent.AsNullable()) is not { } cult)
             return;
 
-        if (!HasComp<CultistDevotionComponent>(hive))
-            EntityManager.AddComponents(hive, _prototypes.Index(DevotionSettings));
-        var group = Comp<CultistDevotionComponent>(hive);
+        var group = cult.Comp;
         group.Members.RemoveWhere(member => TerminatingOrDeleted(member) ||
-            !HasComp<CultistComponent>(member) || _hive.GetHive(member)?.Owner != hive.Owner);
+            !HasComp<CultistComponent>(member) || _cultist.GetGroup(member)?.Owner != cult.Owner);
         group.Members.Add(ent);
         if (!group.Revealed && group.Members.Count >= group.ConcealedMemberLimit)
         {
             group.RevelationRequired = true;
-            Dirty(hive, group);
+            Dirty(cult);
         }
         if (group.Revealed && !_mobState.IsDead(ent))
-            EquipRobes(ent, (hive, group));
+            EquipRobes(ent, cult);
         if (!ent.Comp.Leader)
             return;
 
@@ -97,18 +92,12 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         group.LeaderAbsentSince = null;
     }
 
-    public Entity<CultistDevotionComponent>? GetGroup(EntityUid member)
-    {
-        if (_hive.GetHive(member) is { } hive && TryComp<CultistDevotionComponent>(hive, out var group))
-            return (hive, group);
-        return null;
-    }
-
     public bool Award(EntityUid actor, EntityUid target, CultistDevotionSource source)
     {
         if (_net.IsClient || TerminatingOrDeleted(actor) || TerminatingOrDeleted(target) ||
             !HasComp<CultistComponent>(actor) ||
-            GetGroup(actor) is not { } group || !group.Comp.Rewards.TryGetValue(source, out var amount) || amount <= 0)
+            _cultist.GetGroup(actor) is not { } group ||
+            !group.Comp.Rewards.TryGetValue(source, out var amount) || amount <= 0)
             return false;
 
         var key = source is CultistDevotionSource.Trap or CultistDevotionSource.Sabotage or
@@ -143,7 +132,8 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
 
     private void OnRitesAction(Entity<CultistComponent> ent, ref CultistRitesActionEvent args)
     {
-        if (args.Handled || _net.IsClient || !_cultist.CanUse(ent) || GetGroup(ent) is not { } group)
+        if (args.Handled || _net.IsClient || !_cultist.CanUse(ent) ||
+            _cultist.GetGroup(ent.AsNullable()) is not { } group)
             return;
 
         args.Handled = true;
@@ -221,7 +211,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
 
     private void OnRiteChoice(Entity<CultistComponent> ent, ref CultistRiteChoiceEvent args)
     {
-        if (_net.IsClient || !_cultist.CanUse(ent) || GetGroup(ent) is not { } group ||
+        if (_net.IsClient || !_cultist.CanUse(ent) || _cultist.GetGroup(ent.AsNullable()) is not { } group ||
             GetEntity(args.Group) != group.Owner)
             return;
 
@@ -274,14 +264,14 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
     private bool Ready(EntityUid uid, Entity<CultistDevotionComponent> group)
     {
         return !TerminatingOrDeleted(uid) && HasComp<CultistComponent>(uid) &&
-               GetGroup(uid)?.Owner == group.Owner && _cultist.CanUse(uid) &&
+               _cultist.GetGroup(uid)?.Owner == group.Owner && _cultist.CanUse(uid) &&
                !HasComp<SleepingComponent>(uid);
     }
 
     private bool HasActiveLeader(Entity<CultistDevotionComponent> group)
     {
         return group.Comp.Leader is { } leader && !TerminatingOrDeleted(leader) &&
-               HasComp<CultistComponent>(leader) && GetGroup(leader)?.Owner == group.Owner &&
+               HasComp<CultistComponent>(leader) && _cultist.GetGroup(leader)?.Owner == group.Owner &&
                !_mobState.IsDead(leader) &&
                (group.Comp.LeaderAbsentSince == null ||
                 group.Comp.LeaderAbsentSince + group.Comp.AbsentLeaderDelay > _timing.CurTime);
@@ -293,7 +283,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
         foreach (var member in group.Comp.Members)
         {
             if (!TerminatingOrDeleted(member) && HasComp<CultistComponent>(member) &&
-                GetGroup(member)?.Owner == group.Owner && !_mobState.IsDead(member) &&
+                _cultist.GetGroup(member)?.Owner == group.Owner && !_mobState.IsDead(member) &&
                 (member != group.Comp.Leader || HasActiveLeader(group)))
                 count++;
         }
@@ -324,7 +314,7 @@ public sealed partial class SharedCultistRitesSystem : EntitySystem
             CancelRitual((uid, group));
             CancelSacrifice((uid, group));
             CancelRevelation((uid, group));
-            RemCompDeferred<CultistDevotionComponent>(uid);
+            QueueDel(uid);
         }
         _sacrificeTargets.Clear();
         ClearRiteVisuals();

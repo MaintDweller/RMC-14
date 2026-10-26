@@ -1,6 +1,6 @@
 - type: entity
   id: RMCCultistDevotion
-  name: cult devotion settings
+  name: cult group
   categories: [ HideSpawnMenu ]
   components:
   - type: CultistDevotion

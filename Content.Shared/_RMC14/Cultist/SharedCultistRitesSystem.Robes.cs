@@ -14,7 +14,7 @@ public sealed partial class SharedCultistRitesSystem
     private void OnCultistRevived(Entity<CultistComponent> ent, ref MobStateChangedEvent args)
     {
         if (_net.IsServer && args.OldMobState == MobState.Dead && args.NewMobState != MobState.Dead &&
-            GetGroup(ent) is { Comp.Revealed: true } group)
+            _cultist.GetGroup(ent.AsNullable()) is { Comp.Revealed: true } group)
             EquipRobes(ent, group);
     }
 
