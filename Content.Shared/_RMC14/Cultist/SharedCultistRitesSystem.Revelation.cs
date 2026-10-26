@@ -21,7 +21,13 @@ public sealed partial class SharedCultistRitesSystem
         if (!TryComp<CultistDevotionComponent>(GetEntity(args.Event.Group), out var group) ||
             group.Revelation is not { Started: true } ritual || ritual.Id != args.Event.RitualId ||
             ritual.Leader != ent.Owner || !ValidRevelation((GetEntity(args.Event.Group), group), ritual))
+        {
             args.Cancel();
+            return;
+        }
+
+        if (ritual.DoAfter != null)
+            UpdateRevelationSound(group, ritual, args.DoAfter.StartTime + args.DoAfter.Args.Delay);
     }
 
     private void OnRevelationDoAfter(Entity<CultistComponent> ent, ref CultistRevelationDoAfterEvent args)
@@ -203,6 +209,7 @@ public sealed partial class SharedCultistRitesSystem
         if (ev.Handled)
             return;
         ritual.DoAfter = id;
+        UpdateRevelationSound(group.Comp, ritual, ev.DoAfter.StartTime + ev.DoAfter.Args.Delay);
         StartRiteVisuals(ritual.Effects, group.Comp.RevelationEffects, ritual.Leader, group.Comp.RevelationDelay);
         foreach (var participant in ritual.Participants.Keys)
         {
@@ -210,9 +217,18 @@ public sealed partial class SharedCultistRitesSystem
                 StartRiteVisuals(ritual.Effects, group.Comp.RevelationParticipantEffects,
                     participant, group.Comp.RevelationDelay, ritual.Leader);
         }
-        _audio.PlayPvs(group.Comp.RitualSound, ritual.Leader);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-revelation-started", ("leader", ritual.Leader),
             ("count", ritual.Participants.Count), ("seconds", group.Comp.RevelationDelay.TotalSeconds)), ritual.Leader);
+    }
+
+    private void UpdateRevelationSound(CultistDevotionComponent group, CultistRevelation ritual, TimeSpan endsAt)
+    {
+        if (ritual.SoundPlayed ||
+            endsAt - _timing.CurTime > group.RevelationSoundLeadTime)
+            return;
+
+        ritual.SoundPlayed = true;
+        ritual.Sound = _audio.PlayPvs(group.RevelationSound, ritual.Leader)?.Entity;
     }
 
     private bool ValidRevelation(Entity<CultistDevotionComponent> group, CultistRevelation ritual)
@@ -252,6 +268,7 @@ public sealed partial class SharedCultistRitesSystem
         bool completed = false)
     {
         group.Comp.Revelation = null;
+        _audio.Stop(ritual.Sound);
         EndRiteVisuals(ritual.Effects, completed);
         foreach (var member in ritual.Participants.Keys)
         {

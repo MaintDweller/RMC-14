@@ -42,7 +42,7 @@ public sealed partial class SharedCultistRitesSystem
 
         ent.Comp.ParasiteRitual = id;
         StartRiteVisuals(ent.Comp.ParasiteEffects, group.Comp.ParasiteRiteEffects, ent, group.Comp.ParasiteRitualDelay);
-        _audio.PlayPvs(group.Comp.RitualSound, ent);
+        _audio.PlayPvs(group.Comp.ParasiteRitualSound, ent);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-parasite-rite-started",
             ("seconds", group.Comp.ParasiteRitualDelay.TotalSeconds)), ent);
         return true;

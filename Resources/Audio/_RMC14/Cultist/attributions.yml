@@ -1,3 +1,15 @@
+- files: ["rite_succession.ogg"]
+  license: "CC-BY-SA-3.0"
+  copyright: "/tg/station contributors; mandswap.ogg, resampled, compressed, loudness normalized, and faded."
+  source: "https://github.com/tgstation/tgstation/blob/4296722f886514929b6ae5dbca6581054828eb57/sound/effects/magic/mandswap.ogg"
+- files: ["rite_parasite.ogg"]
+  license: "CC-BY-SA-3.0"
+  copyright: "/tg/station contributors; enter_blood.ogg, resampled, compressed, loudness normalized, and faded."
+  source: "https://github.com/tgstation/tgstation/blob/4296722f886514929b6ae5dbca6581054828eb57/sound/effects/magic/enter_blood.ogg"
+- files: ["rite_sacrifice.ogg"]
+  license: "CC-BY-SA-3.0"
+  copyright: "/tg/station contributors; demon_consume.ogg, resampled, compressed, loudness normalized, and faded."
+  source: "https://github.com/tgstation/tgstation/blob/4296722f886514929b6ae5dbca6581054828eb57/sound/effects/magic/demon_consume.ogg"
 - files: ["robes.ogg"]
   license: "CC-BY-SA-3.0"
   copyright: "CM-SS13 contributors, extracted unchanged from sound/voice/scream_horror1.ogg"

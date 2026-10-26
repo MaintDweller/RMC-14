@@ -91,7 +91,7 @@ public sealed partial class SharedCultistRitesSystem
             if (ritual.Supporter is { } visualSupporter)
                 StartRiteVisuals(ritual.Effects, group.Comp.SuccessionParticipantEffects, visualSupporter, delay);
         }
-        _audio.PlayPvs(group.Comp.RitualSound, ritual.Candidate);
+        _audio.PlayPvs(group.Comp.SuccessionSound, ritual.Candidate);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-rite-started", ("candidate", ritual.Candidate),
             ("seconds", (int) delay.TotalSeconds)), ritual.Candidate);
         return true;
@@ -153,7 +153,7 @@ public sealed partial class SharedCultistRitesSystem
         if (ritual.Supporter is { } supporter && TryComp<CultistComponent>(supporter, out var helper))
             helper.Channeling = false;
         Dirty(group);
-        _audio.PlayPvs(comp.RitualSound, ent);
+        _audio.PlayPvs(comp.SuccessionSound, ent);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-rite-completed", ("candidate", ent.Owner)), ent);
         _adminLog.Add(LogType.Mind, LogImpact.High,
             $"{ToPrettyString(ent):actor} became cult leader, " +

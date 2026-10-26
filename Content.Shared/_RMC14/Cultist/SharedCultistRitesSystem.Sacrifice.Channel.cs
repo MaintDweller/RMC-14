@@ -47,7 +47,7 @@ public sealed partial class SharedCultistRitesSystem
             ritual.Initiator, group.Comp.SacrificeDelay);
         StartRiteVisuals(ritual.Effects, group.Comp.SacrificeParticipantEffects, supporter, group.Comp.SacrificeDelay);
         PulseSacrifice(group, ritual);
-        _audio.PlayPvs(group.Comp.RitualSound, ritual.Initiator);
+        _audio.PlayPvs(group.Comp.SacrificeSound, ritual.Initiator);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-sacrifice-started", ("first", ritual.Initiator),
             ("second", supporter), ("victim", ritual.Victim),
             ("seconds", group.Comp.SacrificeDelay.TotalSeconds)), ritual.Victim);

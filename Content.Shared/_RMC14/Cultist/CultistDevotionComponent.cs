@@ -30,7 +30,7 @@ public sealed partial class CultistDevotionComponent : Component
     public bool Revealed;
 
     [DataField]
-    public TimeSpan RevelationDelay = TimeSpan.FromSeconds(30);
+    public TimeSpan RevelationDelay = TimeSpan.FromSeconds(20);
 
     [DataField]
     public int RevelationCost = 50;
@@ -126,7 +126,19 @@ public sealed partial class CultistDevotionComponent : Component
     public float RitualRange = 1.5f;
 
     [DataField]
-    public SoundSpecifier RitualSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/robes.ogg");
+    public SoundSpecifier SuccessionSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/rite_succession.ogg");
+
+    [DataField]
+    public SoundSpecifier ParasiteRitualSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/rite_parasite.ogg");
+
+    [DataField]
+    public SoundSpecifier SacrificeSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/rite_sacrifice.ogg");
+
+    [DataField]
+    public SoundSpecifier RevelationSound = new SoundPathSpecifier("/Audio/_RMC14/Cultist/robes.ogg");
+
+    [DataField]
+    public TimeSpan RevelationSoundLeadTime = TimeSpan.FromSeconds(7);
 
     [DataField]
     public EntProtoId[] SuccessionEffects = ["RMCEffectCultistSuccessionSeal", "RMCEffectCultistSuccessionCrown"];
@@ -180,6 +192,8 @@ public sealed class CultistRevelation
     public readonly List<EntityUid> Effects = new();
     public bool Started;
     public DoAfterId? DoAfter;
+    public bool SoundPlayed;
+    public EntityUid? Sound;
 }
 
 public enum CultistDevotionSource : byte

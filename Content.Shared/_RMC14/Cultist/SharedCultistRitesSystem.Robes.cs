@@ -22,7 +22,6 @@ public sealed partial class SharedCultistRitesSystem
     {
         ent.Comp.Robe = EquipCultClothing(ent, group.Comp.Robe, "outerClothing");
         ent.Comp.Hood = EquipCultClothing(ent, group.Comp.Hood, "head");
-        _audio.PlayEntity(group.Comp.RitualSound, ent, ent);
         _popup.PopupEntity(Loc.GetString("rmc-cultist-revelation-robes", ("cultist", ent.Owner)), ent);
     }
 
